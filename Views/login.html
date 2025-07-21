@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - StudyValyria</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2><a href="index.html" style="color: white; text-decoration: none;">StudyValyria</a></h2>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="register.html">Register</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="form-container">
+            <h2>Login to Your Account</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" name="email" required>
+                    <div class="error-message" id="emailError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" name="password" required>
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit">Login</button>
+                </div>
+            </form>
+
+            <p style="text-align: center; margin-top: 1rem;">
+                Don't have an account? <a href="register.html">Register here</a>
+            </p>
+
+            <!-- Demo Accounts Section -->
+            <div style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 5px;">
+                <h4>Demo Accounts (for testing):</h4>
+                <p><strong>Student:</strong> student@demo.com / password123</p>
+                <p><strong>Educator:</strong> educator@demo.com / password123</p>
+                <p><strong>Admin:</strong> admin@demo.com / password123</p>
+                <button onclick="fillDemoCredentials('student')" style="margin: 0.2rem; padding: 0.3rem 0.6rem; background: #3498db; color: white; border: none; border-radius: 3px; cursor: pointer;">Fill Student</button>
+                <button onclick="fillDemoCredentials('educator')" style="margin: 0.2rem; padding: 0.3rem 0.6rem; background: #e67e22; color: white; border: none; border-radius: 3px; cursor: pointer;">Fill Educator</button>
+                <button onclick="fillDemoCredentials('admin')" style="margin: 0.2rem; padding: 0.3rem 0.6rem; background: #e74c3c; color: white; border: none; border-radius: 3px; cursor: pointer;">Fill Admin</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="login-script.js"></script>
+</body>
+</html>

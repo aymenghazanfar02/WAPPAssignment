@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educator Dashboard - StudyValyria</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>StudyValyria</h2>
+            </div>
+            <ul class="nav-menu">
+                <li><span id="welcomeMessage">Welcome, Educator!</span></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="dashboard">
+        <div class="dashboard-header">
+            <div class="container">
+                <h1>Educator Dashboard</h1>
+                <p>Manage your courses and track student progress</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="dashboard-nav">
+                <button onclick="showSection('overview')" class="active" id="overviewBtn">Overview</button>
+                <button onclick="showSection('courses')" id="coursesBtn">My Courses</button>
+                <button onclick="showSection('create')" id="createBtn">Create Course</button>
+                <button onclick="showSection('students')" id="studentsBtn">Students</button>
+                <button onclick="showSection('profile')" id="profileBtn">Profile</button>
+            </div>
+
+            <div class="dashboard-content">
+                <!-- Overview Section -->
+                <div id="overviewSection" class="dashboard-section">
+                    <h2>Teaching Overview</h2>
+                    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 2rem 0;">
+                        <div class="stat-card" style="background: #3498db; color: white; padding: 1.5rem; border-radius: 10px; text-align: center;">
+                            <h3 id="createdCoursesCount">0</h3>
+                            <p>Created Courses</p>
+                        </div>
+                        <div class="stat-card" style="background: #27ae60; color: white; padding: 1.5rem; border-radius: 10px; text-align: center;">
+                            <h3 id="totalStudentsCount">0</h3>
+                            <p>Total Students</p>
+                        </div>
+                        <div class="stat-card" style="background: #e67e22; color: white; padding: 1.5rem; border-radius: 10px; text-align: center;">
+                            <h3 id="averageRating">0.0</h3>
+                            <p>Average Rating</p>
+                        </div>
+                        <div class="stat-card" style="background: #9b59b6; color: white; padding: 1.5rem; border-radius: 10px; text-align: center;">
+                            <h3 id="totalRevenue">$0</h3>
+                            <p>Total Revenue</p>
+                        </div>
+                    </div>
+                    
+                    <div class="recent-activity">
+                        <h3>Recent Activity</h3>
+                        <div id="recentActivityList" style="background: #f8f9fa; padding: 1rem; border-radius: 5px; margin-top: 1rem;">
+                            <!-- Recent activities will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Courses Section -->
+                <div id="coursesSection" class="dashboard-section" style="display: none;">
+                    <h2>My Courses</h2>
+                    <div id="educatorCoursesList" class="courses-grid">
+                        <!-- Educator's courses will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Create Course Section -->
+                <div id="createSection" class="dashboard-section" style="display: none;">
+                    <h2>Create New Course</h2>
+                    <form id="createCourseForm" style="max-width: 600px;">
+                        <div class="form-group">
+                            <label for="courseTitle">Course Title</label>
+                            <input type="text" id="courseTitle" name="title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="courseDescription">Description</label>
+                            <textarea id="courseDescription" name="description" rows="4" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="courseDuration">Duration</label>
+                            <input type="text" id="courseDuration" name="duration" placeholder="e.g., 8 weeks" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="courseLevel">Level</label>
+                            <select id="courseLevel" name="level" required>
+                                <option value="">Select level</option>
+                                <option value="Beginner">Beginner</option>
+                                <option value="Intermediate">Intermediate</option>
+                                <option value="Advanced">Advanced</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="coursePrice">Price</label>
+                            <input type="text" id="coursePrice" name="price" placeholder="e.g., $99" required>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit">Create Course</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Students Section -->
+                <div id="studentsSection" class="dashboard-section" style="display: none;">
+                    <h2>Student Management</h2>
+                    <div id="studentsList">
+                        <!-- Students will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Profile Section -->
+                <div id="profileSection" class="dashboard-section" style="display: none;">
+                    <h2>My Profile</h2>
+                    <form id="profileForm" style="max-width: 500px;">
+                        <div class="form-group">
+                            <label for="profileFirstName">First Name</label>
+                            <input type="text" id="profileFirstName" name="firstName">
+                        </div>
+                        <div class="form-group">
+                            <label for="profileLastName">Last Name</label>
+                            <input type="text" id="profileLastName" name="lastName">
+                        </div>
+                        <div class="form-group">
+                            <label for="profileEmail">Email</label>
+                            <input type="email" id="profileEmail" name="email" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="profileBio">Bio</label>
+                            <textarea id="profileBio" name="bio" rows="4" placeholder="Tell students about yourself..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit">Update Profile</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="educator-script.js"></script>
+</body>
+</html>

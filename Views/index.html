@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyValyria - Digital Learning Platform</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>StudyValyria</h2>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#courses">Courses</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="login.html" class="login-btn">Login</a></li>
+                <li><a href="register.html" class="register-btn">Register</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <h1>Welcome to StudyValyria</h1>
+                <p>Your gateway to immersive digital learning experiences</p>
+                <button onclick="scrollToCourses()" class="cta-button">Explore Courses</button>
+            </div>
+        </section>
+
+        <!-- Courses Section -->
+        <section id="courses" class="courses-section">
+            <div class="container">
+                <h2>Available Courses</h2>
+                <div class="courses-grid" id="coursesGrid">
+                    <!-- Courses will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="about-section">
+            <div class="container">
+                <h2>About StudyValyria</h2>
+                <p>StudyValyria is a cutting-edge digital learning platform designed to bridge the gap between traditional education and modern technology. We provide an immersive, personalized learning experience for students, educators, and administrators.</p>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="contact-section">
+            <div class="container">
+                <h2>Contact Us</h2>
+                <form id="contactForm" class="contact-form">
+                    <input type="text" id="contactName" placeholder="Your Name" required>
+                    <input type="email" id="contactEmail" placeholder="Your Email" required>
+                    <textarea id="contactMessage" placeholder="Your Message" required></textarea>
+                    <button type="submit">Send Message</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 StudyValyria. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="guest-script.js"></script>
+</body>
+</html>

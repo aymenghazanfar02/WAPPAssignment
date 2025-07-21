@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - StudyValyria</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2><a href="index.html" style="color: white; text-decoration: none;">StudyValyria</a></h2>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="form-container">
+            <h2>Create Your Account</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" name="firstName" required>
+                    <div class="error-message" id="firstNameError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" name="lastName" required>
+                    <div class="error-message" id="lastNameError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                    <div class="error-message" id="emailError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                    <div class="error-message" id="confirmPasswordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="userType">I am a:</label>
+                    <select id="userType" name="userType" required>
+                        <option value="">Select your role</option>
+                        <option value="student">Student</option>
+                        <option value="educator">Educator</option>
+                    </select>
+                    <div class="error-message" id="userTypeError"></div>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit">Create Account</button>
+                </div>
+            </form>
+
+            <p style="text-align: center; margin-top: 1rem;">
+                Already have an account? <a href="login.html">Login here</a>
+            </p>
+        </div>
+    </main>
+
+    <script src="register-script.js"></script>
+</body>
+</html>

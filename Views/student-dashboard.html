@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - StudyValyria</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>StudyValyria</h2>
+            </div>
+            <ul class="nav-menu">
+                <li><span id="welcomeMessage">Welcome, Student!</span></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="dashboard">
+        <div class="dashboard-header">
+            <div class="container">
+                <h1>Student Dashboard</h1>
+                <p>Manage your learning journey</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="dashboard-nav">
+                <button onclick="showSection('overview')" class="active" id="overviewBtn">Overview</button>
+                <button onclick="showSection('courses')" id="coursesBtn">My Courses</button>
+                <button onclick="showSection('browse')" id="browseBtn">Browse Courses</button>
+                <button onclick="showSection('quizzes')" id="quizzesBtn">Quizzes</button>
+                <button onclick="showSection('profile')" id="profileBtn">Profile</button>
+            </div>
+
+            <div class="dashboard-content">
+                <!-- Overview Section -->
+                <div id="overviewSection" class="dashboard-section">
+                    <h2>Learning Overview</h2>
+                    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 2rem 0;">
+                        <div class="stat-card" style="background: #3498db; color: white; padding: 1.5rem; border-radius: 10px; text-align: center;">
+                            <h3 id="enrolledCoursesCount">0</h3>
+                            <p>Enrolled Courses</p>
+                        </div>
+                        <div class="stat-card" style="background: #27ae60; color: white; padding: 1.5rem; border-radius: 10px; text-align: center;">
+                            <h3 id="completedQuizzesCount">0</h3>
+                            <p>Completed Quizzes</p>
+                        </div>
+                        <div class="stat-card" style="background: #e67e22; color: white; padding: 1.5rem; border-radius: 10px; text-align: center;">
+                            <h3 id="averageScore">0%</h3>
+                            <p>Average Score</p>
+                        </div>
+                        <div class="stat-card" style="background: #9b59b6; color: white; padding: 1.5rem; border-radius: 10px; text-align: center;">
+                            <h3 id="studyHours">0</h3>
+                            <p>Study Hours</p>
+                        </div>
+                    </div>
+                    
+                    <div class="recent-activity">
+                        <h3>Recent Activity</h3>
+                        <div id="recentActivityList" style="background: #f8f9fa; padding: 1rem; border-radius: 5px; margin-top: 1rem;">
+                            <!-- Recent activities will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Courses Section -->
+                <div id="coursesSection" class="dashboard-section" style="display: none;">
+                    <h2>My Enrolled Courses</h2>
+                    <div id="enrolledCoursesList" class="courses-grid">
+                        <!-- Enrolled courses will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Browse Courses Section -->
+                <div id="browseSection" class="dashboard-section" style="display: none;">
+                    <h2>Browse Available Courses</h2>
+                    <div class="search-filter" style="margin-bottom: 2rem;">
+                        <input type="text" id="courseSearch" placeholder="Search courses..." style="padding: 0.5rem; margin-right: 1rem; border: 1px solid #ddd; border-radius: 5px;">
+                        <select id="levelFilter" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                            <option value="all">All Levels</option>
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                        </select>
+                    </div>
+                    <div id="availableCoursesList" class="courses-grid">
+                        <!-- Available courses will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Quizzes Section -->
+                <div id="quizzesSection" class="dashboard-section" style="display: none;">
+                    <h2>Quizzes & Assessments</h2>
+                    <div id="quizzesList">
+                        <!-- Quizzes will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Profile Section -->
+                <div id="profileSection" class="dashboard-section" style="display: none;">
+                    <h2>My Profile</h2>
+                    <form id="profileForm" style="max-width: 500px;">
+                        <div class="form-group">
+                            <label for="profileFirstName">First Name</label>
+                            <input type="text" id="profileFirstName" name="firstName">
+                        </div>
+                        <div class="form-group">
+                            <label for="profileLastName">Last Name</label>
+                            <input type="text" id="profileLastName" name="lastName">
+                        </div>
+                        <div class="form-group">
+                            <label for="profileEmail">Email</label>
+                            <input type="email" id="profileEmail" name="email" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="profileBio">Bio</label>
+                            <textarea id="profileBio" name="bio" rows="4" placeholder="Tell us about yourself..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit">Update Profile</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="student-script.js"></script>
+</body>
+</html>
