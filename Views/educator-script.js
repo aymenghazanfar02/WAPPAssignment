@@ -161,7 +161,7 @@ async function createCourse() {
   }
 
   try {
-    const response = await fetch("/api/courses", {
+    const response = await fetch("http://localhost:51264/api/courses", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData)
@@ -253,7 +253,7 @@ async function deleteCourse(courseId) {
   if (!confirmDelete) return;
 
   try {
-    const response = await fetch(`/api/courses/${courseId}`, {
+    const response = await fetch(`http://localhost:51264/api/courses/${courseId}?educatorId=${currentUser.userId}`, {
       method: "DELETE"
     });
 
@@ -381,7 +381,7 @@ async function updateProfile() {
   }
 
   try {
-    const response = await fetch(`/api/users/${currentUser.userId}`, {
+    const response = await fetch(`http://localhost:51264/api/users/${currentUser.userId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData)
@@ -402,19 +402,19 @@ async function updateProfile() {
 
 // Utility functions
 async function getEducatorCourses() {
-  const response = await fetch(`/api/courses/educator/${currentUser.userId}`);
+  const response = await fetch(`http://localhost:51264/api/courses/educator/${currentUser.userId}`);
   if (!response.ok) throw new Error("Failed to fetch educator courses");
   return await response.json();
 }
 
 async function getCourse(courseId) {
-  const response = await fetch(`/api/courses/${courseId}`);
+  const response = await fetch(`http://localhost:51264/api/courses/${courseId}`);
   if (!response.ok) throw new Error("Failed to fetch course");
   return await response.json();
 }
 
 async function getEnrollmentsByCourse(courseId) {
-  const response = await fetch(`/api/enrollments/course/${courseId}`);
+  const response = await fetch(`http://localhost:51264/api/enrollments/course/${courseId}`);
   if (!response.ok) throw new Error("Failed to fetch enrollments");
   return await response.json();
 }

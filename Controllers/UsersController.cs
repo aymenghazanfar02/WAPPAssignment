@@ -18,7 +18,7 @@ namespace WAPPAssignment.Controllers
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                string query = "SELECT UserId, FirstName, LastName, Email, UserType, IsApproved FROM Users";
+                string query = "SELECT UserId, FirstName, LastName, Email, UserType, IsApproved, IsActive, RegistrationDate FROM Users";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -31,7 +31,9 @@ namespace WAPPAssignment.Controllers
                             LastName = reader["LastName"].ToString(),
                             Email = reader["Email"].ToString(),
                             UserType = reader["UserType"].ToString(),
-                            IsApproved = Convert.ToBoolean(reader["IsApproved"])
+                            IsApproved = Convert.ToBoolean(reader["IsApproved"]),
+                            IsActive = Convert.ToBoolean(reader["IsActive"]),
+                            RegistrationDate = Convert.ToDateTime(reader["RegistrationDate"])
                         });
                     }
                 }
@@ -53,6 +55,26 @@ namespace WAPPAssignment.Controllers
                 if (rowsAffected > 0)
                 {
                     return Ok("User approved");
+                }
+                return NotFound();
+            }
+        }
+
+        [HttpPut]
+        [Route("api/users/{userId}/status")]
+        public IHttpActionResult ToggleUserStatus(int userId, [FromBody] UserStatusModel model)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string query = "UPDATE Users SET IsActive = @IsActive WHERE UserId = @UserId";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@UserId", userId);
+                cmd.Parameters.AddWithValue("@IsActive", model.IsActive);
+                int rowsAffected = cmd.ExecuteNonQuery();
+                if (rowsAffected > 0)
+                {
+                    return Ok("User status updated");
                 }
                 return NotFound();
             }
@@ -116,7 +138,7 @@ namespace WAPPAssignment.Controllers
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                string query = "SELECT UserId, FirstName, LastName, Email, UserType, IsApproved, Bio FROM Users WHERE UserId = @Id";
+                string query = "SELECT UserId, FirstName, LastName, Email, UserType, IsApproved, IsActive, Bio, RegistrationDate FROM Users WHERE UserId = @Id";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@Id", id);
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -131,11 +153,51 @@ namespace WAPPAssignment.Controllers
                             Email = reader["Email"].ToString(),
                             UserType = reader["UserType"].ToString(),
                             IsApproved = Convert.ToBoolean(reader["IsApproved"]),
-                            Bio = reader["Bio"].ToString()
+                            IsActive = Convert.ToBoolean(reader["IsActive"]),
+                            Bio = reader["Bio"].ToString(),
+                            RegistrationDate = Convert.ToDateTime(reader["RegistrationDate"])
                         });
                     }
                     return NotFound();
                 }
+            }
+        }
+
+        [HttpGet]
+        [Route("api/users/{id}/name")]
+        public IHttpActionResult GetUserName(int id)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string query = "SELECT FirstName, LastName FROM Users WHERE UserId = @Id";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@Id", id);
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return Ok(new { 
+                            Name = reader["FirstName"].ToString() + " " + reader["LastName"].ToString()
+                        });
+                    }
+                    return NotFound();
+                }
+            }
+        }
+
+        [HttpGet]
+        [Route("api/users/check-email")]
+        public IHttpActionResult CheckEmail(string email)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string query = "SELECT COUNT(*) FROM Users WHERE Email = @Email";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@Email", email);
+                int count = (int)cmd.ExecuteScalar();
+                return Ok(new { exists = count > 0 });
             }
         }
 
@@ -175,7 +237,9 @@ namespace WAPPAssignment.Controllers
         public string Email { get; set; }
         public string UserType { get; set; }
         public bool IsApproved { get; set; }
+        public bool IsActive { get; set; }
         public string Bio { get; set; }
+        public DateTime RegistrationDate { get; set; }
     }
 
     public class UserRegistrationModel
@@ -192,5 +256,10 @@ namespace WAPPAssignment.Controllers
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Bio { get; set; }
+    }
+
+    public class UserStatusModel
+    {
+        public bool IsActive { get; set; }
     }
 }

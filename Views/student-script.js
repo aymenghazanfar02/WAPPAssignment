@@ -93,43 +93,56 @@ async function loadOverviewData() {
     document.getElementById("averageScore").textContent = averageScore + "%"
   }
 
-  // Calculate study hours (mock data)
-  const studyHours = enrolledCourses.length * 15 // Assume 15 hours per course
-  document.getElementById("studyHours").textContent = studyHours
+  // Load study hours from backend
+  loadStudyHours()
 
-  // Load recent activity (keep mock for now)
+  // Load recent activity from backend
   loadRecentActivity()
 }
 
-// Load recent activity
-function loadRecentActivity() {
-  const activities = [
-    {
-      type: "enrollment",
-      message: "Enrolled in Introduction to Web Development",
-      date: new Date(Date.now() - 86400000),
-    },
-    { type: "quiz", message: "Completed JavaScript Basics Quiz - Score: 85%", date: new Date(Date.now() - 172800000) },
-    { type: "course", message: "Started Advanced JavaScript course", date: new Date(Date.now() - 259200000) },
-  ]
+// Load recent activity from backend
+async function loadRecentActivity() {
+  try {
+    const response = await fetch(`http://localhost:51264/api/activity/user/${currentUser.userId}`);
+    const activities = response.ok ? await response.json() : [];
 
-  const activityList = document.getElementById("recentActivityList")
-  activityList.innerHTML = ""
+    const activityList = document.getElementById("recentActivityList")
+    activityList.innerHTML = ""
 
-  if (activities.length === 0) {
-    activityList.innerHTML = "<p>No recent activity</p>"
-    return
+    if (activities.length === 0) {
+      activityList.innerHTML = "<p>No recent activity</p>"
+      return
+    }
+
+    activities.forEach((activity) => {
+      const activityItem = document.createElement("div")
+      activityItem.style.cssText = "padding: 0.5rem 0; border-bottom: 1px solid #eee;"
+      activityItem.innerHTML = `
+              <p style="margin: 0; font-weight: 500;">${activity.message}</p>
+              <small style="color: #666;">${formatDate(new Date(activity.date))}</small>
+          `
+      activityList.appendChild(activityItem)
+    })
+  } catch (error) {
+    console.error("Error loading recent activity:", error);
+    document.getElementById("recentActivityList").innerHTML = "<p>Unable to load recent activity</p>"
   }
+}
 
-  activities.forEach((activity) => {
-    const activityItem = document.createElement("div")
-    activityItem.style.cssText = "padding: 0.5rem 0; border-bottom: 1px solid #eee;"
-    activityItem.innerHTML = `
-            <p style="margin: 0; font-weight: 500;">${activity.message}</p>
-            <small style="color: #666;">${formatDate(activity.date)}</small>
-        `
-    activityList.appendChild(activityItem)
-  })
+// Load study hours from backend
+async function loadStudyHours() {
+  try {
+    const response = await fetch(`http://localhost:51264/api/activity/study-hours/${currentUser.userId}`);
+    if (response.ok) {
+      const data = await response.json();
+      document.getElementById("studyHours").textContent = data.studyHours;
+    } else {
+      document.getElementById("studyHours").textContent = "0";
+    }
+  } catch (error) {
+    console.error("Error loading study hours:", error);
+    document.getElementById("studyHours").textContent = "0";
+  }
 }
 
 // Load enrolled courses
@@ -148,22 +161,25 @@ async function loadEnrolledCourses() {
   for (const enrollment of enrolled) {
     const course = await getCourse(enrollment.courseId)
     if (course) {
-      const courseCard = createEnrolledCourseCard(course, enrollment)
+      const courseCard = await createEnrolledCourseCard(course, enrollment)
       coursesList.appendChild(courseCard)
     }
   }
 }
 
 // Create enrolled course card
-function createEnrolledCourseCard(course, enrollment) {
+async function createEnrolledCourseCard(course, enrollment) {
   const card = document.createElement("div")
   card.className = "course-card"
 
   const progress = enrollment.progress
+  
+  // Fetch instructor name
+  const instructorName = await getUserName(course.educatorId)
 
   card.innerHTML = `
         <h3>${course.title}</h3>
-        <p><strong>Instructor:</strong> ${course.educatorId}</p> // Note: Fetch instructor name if needed
+        <p><strong>Instructor:</strong> ${instructorName}</p>
         <p><strong>Duration:</strong> ${course.duration}</p>
         <div style="margin: 1rem 0;">
             <div style="background: #f0f0f0; border-radius: 10px; overflow: hidden;">
@@ -188,11 +204,11 @@ async function loadAvailableCourses() {
   const enrolledCourseIds = (await getEnrolledCourses()).map((en) => en.courseId)
   const availableCourses = allCourses.filter((course) => !enrolledCourseIds.includes(course.courseId))
 
-  displayAvailableCourses(availableCourses)
+  await displayAvailableCourses(availableCourses)
 }
 
 // Display available courses
-function displayAvailableCourses(courses) {
+async function displayAvailableCourses(courses) {
   const coursesList = document.getElementById("availableCoursesList")
   coursesList.innerHTML = ""
 
@@ -202,20 +218,23 @@ function displayAvailableCourses(courses) {
     return
   }
 
-  courses.forEach((course) => {
-    const courseCard = createAvailableCourseCard(course)
+  for (const course of courses) {
+    const courseCard = await createAvailableCourseCard(course)
     coursesList.appendChild(courseCard)
-  })
+  }
 }
 
 // Create available course card
-function createAvailableCourseCard(course) {
+async function createAvailableCourseCard(course) {
   const card = document.createElement("div")
   card.className = "course-card"
 
+  // Fetch instructor name
+  const instructorName = await getUserName(course.educatorId)
+
   card.innerHTML = `
         <h3>${course.title}</h3>
-        <p><strong>Instructor:</strong> ${course.educatorId}</p> // Note: Fetch name if needed
+        <p><strong>Instructor:</strong> ${instructorName}</p>
         <p><strong>Duration:</strong> ${course.duration}</p>
         <p><strong>Level:</strong> ${course.level}</p>
         <p>${course.description}</p>
@@ -252,7 +271,7 @@ async function filterAvailableCourses() {
     availableCourses = availableCourses.filter((course) => course.level.toLowerCase() === levelFilter)
   }
 
-  displayAvailableCourses(availableCourses)
+  await displayAvailableCourses(availableCourses)
 }
 
 // Enroll in course
@@ -373,20 +392,12 @@ async function takeQuiz(courseId) {
   const course = await getCourse(courseId)
   if (!course) return
 
-  // Simple quiz simulation (keep for demo, in real app would be more sophisticated)
-  const questions = [
-    { question: `What is the main focus of ${course.title}?`, options: ["A", "B", "C", "D"], correct: 0 },
-    {
-      question: `Who is the instructor for ${course.title}?`,
-      options: [course.educatorId.toString(), "Other", "Another", "Different"],
-      correct: 0,
-    },
-    {
-      question: `How long is the ${course.title} course?`,
-      options: [course.duration, "Different", "Other", "Another"],
-      correct: 0,
-    },
-  ]
+  // Fetch quiz questions from backend
+  const questions = await getQuizQuestions(courseId)
+  if (!questions || questions.length === 0) {
+    alert("No quiz questions available for this course.")
+    return
+  }
 
   let score = 0
   const answers = []
@@ -394,7 +405,7 @@ async function takeQuiz(courseId) {
   for (let i = 0; i < questions.length; i++) {
     const q = questions[i]
     const answer = prompt(
-      `Question ${i + 1}: ${q.question}\n\n${q.options.map((opt, idx) => `${idx + 1}. ${opt}`).join("\n")}\n\nEnter your answer (1-4):`,
+      `Question ${i + 1}: ${q.Question}\n\n${q.Options.map((opt, idx) => `${idx + 1}. ${opt}`).join("\n")}\n\nEnter your answer (1-4):`,
     )
 
     if (answer === null) {
@@ -405,7 +416,7 @@ async function takeQuiz(courseId) {
     const answerIndex = Number.parseInt(answer) - 1
     answers.push(answerIndex)
 
-    if (answerIndex === q.correct) {
+    if (answerIndex === q.CorrectAnswer) {
       score++
     }
   }
@@ -435,11 +446,113 @@ async function takeQuiz(courseId) {
 }
 
 // View quiz results
-function viewQuizResults(courseId) {
-  // Since we fetch on load, but for simplicity, alert from local or refetch if needed
-  // But to keep simple, assume loadQuizzes has data, but here we can refetch
-  // For now, keep as is, but in full integration, fetch and display
-  alert("Viewing quiz results for course " + courseId + ". (Implement detailed view)")
+async function viewQuizResults(courseId) {
+  try {
+    // Fetch quiz results for this specific course
+    const response = await fetch(`http://localhost:51264/api/quizzes/results/user/${currentUser.userId}`);
+    if (!response.ok) {
+      alert("Failed to fetch quiz results.");
+      return;
+    }
+    
+    const allResults = await response.json();
+    const courseResults = allResults.filter(result => result.CourseId === courseId);
+    
+    if (courseResults.length === 0) {
+      alert("No quiz results found for this course.");
+      return;
+    }
+    
+    // Get course name
+    const course = await getCourse(courseId);
+    const courseName = course ? course.Title : `Course ${courseId}`;
+    
+    // Sort results by date (newest first)
+    courseResults.sort((a, b) => new Date(b.Date) - new Date(a.Date));
+    
+    // Create detailed results display
+    let resultsHtml = `<h3>Quiz Results for ${courseName}</h3>`;
+    resultsHtml += `<div style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 1rem; border-radius: 5px;">`;
+    
+    courseResults.forEach((result, index) => {
+      const date = new Date(result.Date).toLocaleDateString() + " " + new Date(result.Date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const scoreColor = result.Score >= 80 ? "#27ae60" : result.Score >= 60 ? "#f39c12" : "#e74c3c";
+      
+      resultsHtml += `
+        <div style="border-bottom: 1px solid #eee; padding: 1rem 0; ${index === courseResults.length - 1 ? 'border-bottom: none;' : ''}">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="color: ${scoreColor};">Score: ${result.Score}%</strong>
+              <br>
+              <small style="color: #666;">Attempt ${index + 1} - ${date}</small>
+            </div>
+            <div style="text-align: right;">
+              <span style="background: ${scoreColor}; color: white; padding: 0.25rem 0.5rem; border-radius: 3px; font-size: 0.9rem;">
+                ${result.Score >= 80 ? 'Excellent' : result.Score >= 60 ? 'Good' : 'Needs Improvement'}
+              </span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    
+    resultsHtml += `</div>`;
+    
+    // Calculate statistics
+    const bestScore = Math.max(...courseResults.map(r => r.Score));
+    const averageScore = Math.round(courseResults.reduce((sum, r) => sum + r.Score, 0) / courseResults.length);
+    const totalAttempts = courseResults.length;
+    
+    resultsHtml += `
+      <div style="margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 5px;">
+        <h4>Statistics</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+          <div><strong>Best Score:</strong> ${bestScore}%</div>
+          <div><strong>Average Score:</strong> ${averageScore}%</div>
+          <div><strong>Total Attempts:</strong> ${totalAttempts}</div>
+        </div>
+      </div>
+    `;
+    
+    // Create modal-like display
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: rgba(0,0,0,0.5); z-index: 1000; display: flex; 
+      justify-content: center; align-items: center;
+    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+      background: white; padding: 2rem; border-radius: 10px; 
+      max-width: 600px; width: 90%; max-height: 80%; overflow-y: auto;
+    `;
+    
+    modalContent.innerHTML = resultsHtml + `
+      <div style="text-align: center; margin-top: 1.5rem;">
+        <button onclick="this.closest('.modal').remove()" 
+                style="padding: 0.75rem 1.5rem; background: #3498db; color: white; 
+                       border: none; border-radius: 5px; cursor: pointer; font-size: 1rem;">
+          Close
+        </button>
+      </div>
+    `;
+    
+    modal.className = 'modal';
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+    
+  } catch (error) {
+    console.error("Error viewing quiz results:", error);
+    alert("An error occurred while loading quiz results.");
+  }
 }
 
 // Load profile
@@ -541,7 +654,34 @@ async function getQuizResults() {
   }
 }
 
+async function getQuizQuestions(courseId) {
+  try {
+    const response = await fetch(`http://localhost:51264/api/quizzes/questions/${courseId}`);
+    if (response.ok) {
+      return await response.json();
+    }
+    return [];
+  } catch (error) {
+    console.error("Error fetching quiz questions:", error);
+    return [];
+  }
+}
+
 // Remove unused localStorage functions like saveQuizResult, addEnrollmentRecord, updateCurrentUser
+
+async function getUserName(userId) {
+  try {
+    const response = await fetch(`http://localhost:51264/api/users/${userId}/name`);
+    if (response.ok) {
+      const result = await response.json();
+      return result.Name;
+    }
+    return `User ${userId}`;
+  } catch (error) {
+    console.error("Error fetching user name:", error);
+    return `User ${userId}`;
+  }
+}
 
 function formatDate(date) {
   return date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })

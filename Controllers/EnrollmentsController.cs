@@ -10,6 +10,39 @@ namespace WAPPAssignment.Controllers
     {
         private string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
 
+        [HttpGet]
+        [Route("api/enrollments")]
+        public IHttpActionResult GetAllEnrollments()
+        {
+            List<EnrollmentWithCourseModel> enrollments = new List<EnrollmentWithCourseModel>();
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string query = @"SELECT e.EnrollmentId, e.UserId, e.CourseId, e.EnrollmentDate, e.Progress,
+                                        c.Title, c.Price
+                                 FROM Enrollments e
+                                 INNER JOIN Courses c ON e.CourseId = c.CourseId";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        enrollments.Add(new EnrollmentWithCourseModel
+                        {
+                            EnrollmentId = Convert.ToInt32(reader["EnrollmentId"]),
+                            UserId = Convert.ToInt32(reader["UserId"]),
+                            CourseId = Convert.ToInt32(reader["CourseId"]),
+                            EnrollmentDate = Convert.ToDateTime(reader["EnrollmentDate"]),
+                            Progress = Convert.ToInt32(reader["Progress"]),
+                            CourseTitle = reader["Title"].ToString(),
+                            CoursePrice = Convert.ToDecimal(reader["Price"])
+                        });
+                    }
+                }
+            }
+            return Ok(enrollments);
+        }
+
         [HttpPost]
         [Route("api/enrollments")]
         public IHttpActionResult Enroll([FromBody] EnrollmentModel enrollment)
@@ -134,5 +167,16 @@ namespace WAPPAssignment.Controllers
         public string LastName { get; set; }
         public string Email { get; set; }
         public DateTime EnrollmentDate { get; set; }
+    }
+
+    public class EnrollmentWithCourseModel
+    {
+        public int EnrollmentId { get; set; }
+        public int UserId { get; set; }
+        public int CourseId { get; set; }
+        public DateTime EnrollmentDate { get; set; }
+        public int Progress { get; set; }
+        public string CourseTitle { get; set; }
+        public decimal CoursePrice { get; set; }
     }
 }

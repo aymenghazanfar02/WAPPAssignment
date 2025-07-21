@@ -87,34 +87,44 @@ async function loadOverviewData() {
     document.getElementById("pendingApprovalsCount").textContent = pendingEducators.length
 
     // Load system activity
-    loadSystemActivity()
+    await loadSystemActivity()
   } catch (error) {
     console.error("Error loading overview data:", error);
   }
 }
 
 // Load system activity
-function loadSystemActivity() {
-  const activities = [
-    {
-      type: "user",
-      message: "New educator account created: john.doe@example.com",
-      date: new Date(Date.now() - 86400000),
-    },
-    { type: "course", message: 'Course "React Fundamentals" was published', date: new Date(Date.now() - 172800000) },
-    { type: "system", message: "Database backup completed successfully", date: new Date(Date.now() - 259200000) },
-    { type: "user", message: "15 new student registrations today", date: new Date(Date.now() - 345600000) },
-  ]
+async function loadSystemActivity() {
+  try {
+    const response = await fetch('http://localhost:51264/api/activity/system');
+    if (response.ok) {
+      const activities = await response.json();
+      displaySystemActivity(activities);
+    } else {
+      displaySystemActivity([]);
+    }
+  } catch (error) {
+    console.error('Error loading system activity:', error);
+    displaySystemActivity([]);
+  }
+}
 
+// Display system activity
+function displaySystemActivity(activities) {
   const activityList = document.getElementById("systemActivityList")
   activityList.innerHTML = ""
+
+  if (activities.length === 0) {
+    activityList.innerHTML = '<p style="text-align: center; color: #666;">No recent system activity.</p>';
+    return;
+  }
 
   activities.forEach((activity) => {
     const activityItem = document.createElement("div")
     activityItem.style.cssText = "padding: 0.5rem 0; border-bottom: 1px solid #eee;"
     activityItem.innerHTML = `
-            <p style="margin: 0; font-weight: 500;">${activity.message}</p>
-            <small style="color: #666;">${formatDate(activity.date)}</small>
+            <p style="margin: 0; font-weight: 500;">${activity.Message}</p>
+            <small style="color: #666;">${formatDate(new Date(activity.Date))}</small>
         `
     activityList.appendChild(activityItem)
   })
@@ -280,13 +290,12 @@ async function toggleUserStatus(userId) {
     const confirmAction = confirm(`Are you sure you want to ${action} ${user.firstName} ${user.lastName}?`);
     if (!confirmAction) return;
 
-    const response = await fetch(`http://localhost:51264/api/users/${userId}`, {
+    const response = await fetch(`http://localhost:51264/api/users/${userId}/status`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        ...user,
         isActive: newStatus
       })
     });
