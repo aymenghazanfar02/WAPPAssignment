@@ -166,7 +166,7 @@ namespace WAPPAssignment.Controllers
                 // Get recent course creations
                 string courseQuery = @"
                     SELECT TOP 5 'course' as ActivityType,
-                           'Course "' + Title + '" was published' as Message,
+                           'Course ' + QUOTENAME(Title) + ' was published' as Message,
                            CreatedAt as Date
                     FROM Courses
                     WHERE CreatedAt >= DATEADD(day, -7, GETDATE())
