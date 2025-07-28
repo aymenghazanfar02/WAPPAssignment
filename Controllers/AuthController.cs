@@ -13,7 +13,7 @@ namespace WAPPAssignment.Controllers
 
         [HttpPost]
         [Route("api/auth/register")]
-        public IHttpActionResult Register([FromBody] UserModel user)
+        public IHttpActionResult Register([FromBody] UserRegistrationModel user)
         {
             if (string.IsNullOrEmpty(user.Email) || string.IsNullOrEmpty(user.Password) || string.IsNullOrEmpty(user.UserType))
             {
@@ -93,7 +93,7 @@ namespace WAPPAssignment.Controllers
         }
     }
 
-    public class UserModel
+    public class UserRegistrationModel
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
