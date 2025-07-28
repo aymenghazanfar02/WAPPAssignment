@@ -11,7 +11,6 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WAPPAssignment</RootNamespace>
-
     <AssemblyName>WAPPAssignment</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
@@ -95,6 +94,7 @@
     </Compile>
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\ActivityController.cs" />
