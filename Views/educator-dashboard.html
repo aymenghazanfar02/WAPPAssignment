@@ -32,6 +32,7 @@
                 <button onclick="showSection('overview')" class="active" id="overviewBtn">Overview</button>
                 <button onclick="showSection('courses')" id="coursesBtn">My Courses</button>
                 <button onclick="showSection('create')" id="createBtn">Create Course</button>
+                <button onclick="showSection('quizzes')" id="quizzesBtn">Manage Quizzes</button>
                 <button onclick="showSection('students')" id="studentsBtn">Students</button>
                 <button onclick="showSection('profile')" id="profileBtn">Profile</button>
             </div>
@@ -108,6 +109,71 @@
                             <button type="submit">Create Course</button>
                         </div>
                     </form>
+                </div>
+
+                <!-- Quiz Management Section -->
+                <div id="quizzesSection" class="dashboard-section" style="display: none;">
+                    <h2>Manage Quizzes</h2>
+                    
+                    <!-- Course Selection -->
+                    <div class="form-group" style="margin-bottom: 2rem;">
+                        <label for="quizCourseSelect">Select Course:</label>
+                        <select id="quizCourseSelect" onchange="loadQuizQuestions()" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px; width: 300px;">
+                            <option value="">Choose a course...</option>
+                        </select>
+                    </div>
+
+                    <!-- Add New Question Form -->
+                    <div id="addQuestionForm" style="display: none; background: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem;">
+                        <h3>Add New Quiz Question</h3>
+                        <form id="quizQuestionForm">
+                            <div class="form-group">
+                                <label for="questionText">Question:</label>
+                                <textarea id="questionText" name="question" rows="3" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="optionA">Option A:</label>
+                                <input type="text" id="optionA" name="optionA" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                            </div>
+                            <div class="form-group">
+                                <label for="optionB">Option B:</label>
+                                <input type="text" id="optionB" name="optionB" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                            </div>
+                            <div class="form-group">
+                                <label for="optionC">Option C:</label>
+                                <input type="text" id="optionC" name="optionC" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                            </div>
+                            <div class="form-group">
+                                <label for="optionD">Option D:</label>
+                                <input type="text" id="optionD" name="optionD" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                            </div>
+                            <div class="form-group">
+                                <label for="correctAnswer">Correct Answer:</label>
+                                <select id="correctAnswer" name="correctAnswer" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                                    <option value="">Select correct answer...</option>
+                                    <option value="1">Option A</option>
+                                    <option value="2">Option B</option>
+                                    <option value="3">Option C</option>
+                                    <option value="4">Option D</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" style="background: #27ae60; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 5px; cursor: pointer;">Add Question</button>
+                                <button type="button" onclick="cancelAddQuestion()" style="background: #95a5a6; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; margin-left: 1rem;">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Quiz Questions List -->
+                    <div id="quizQuestionsContainer" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3>Quiz Questions</h3>
+                            <button onclick="showAddQuestionForm()" style="background: #3498db; color: white; padding: 0.5rem 1rem; border: none; border-radius: 5px; cursor: pointer;">Add New Question</button>
+                        </div>
+                        <div id="quizQuestionsList">
+                            <!-- Quiz questions will be loaded here -->
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Students Section -->

@@ -132,7 +132,6 @@ namespace WAPPAssignment.Controllers
         }
 
         [HttpGet]
-        [Route("api/users/{id}")]
         public IHttpActionResult GetUser(int id)
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -220,6 +219,41 @@ namespace WAPPAssignment.Controllers
                     return Ok("Profile updated successfully");
                 }
                 return NotFound();
+            }
+        }
+
+        [HttpDelete]
+        [Route("api/users/delete/{id}")]
+        public IHttpActionResult Delete(int id)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                
+                // Check if user exists
+                string checkQuery = "SELECT COUNT(*) FROM Users WHERE UserId = @Id";
+                using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
+                {
+                    checkCmd.Parameters.AddWithValue("@Id", id);
+                    int count = (int)checkCmd.ExecuteScalar();
+                    if (count == 0)
+                    {
+                        return NotFound();
+                    }
+                }
+                
+                // Delete user
+                string deleteQuery = "DELETE FROM Users WHERE UserId = @Id";
+                using (SqlCommand deleteCmd = new SqlCommand(deleteQuery, conn))
+                {
+                    deleteCmd.Parameters.AddWithValue("@Id", id);
+                    int rowsAffected = deleteCmd.ExecuteNonQuery();
+                    if (rowsAffected > 0)
+                    {
+                        return Ok("User deleted successfully");
+                    }
+                    return InternalServerError();
+                }
             }
         }
 

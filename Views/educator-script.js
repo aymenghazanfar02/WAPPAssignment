@@ -64,6 +64,11 @@ function showSection(sectionName) {
   document.getElementById(sectionName + "Btn").classList.add("active")
 
   currentSection = sectionName
+  
+  // Load quiz courses when quiz section is shown
+  if (sectionName === 'quizzes') {
+    loadQuizCourses();
+  }
 }
 
 // Load overview data
@@ -84,8 +89,8 @@ async function loadOverviewData() {
       totalRevenue += enrollments.length * parseFloat(course.price);
     }
 
-    document.getElementById("totalCourses").textContent = totalCourses;
-    document.getElementById("totalStudents").textContent = totalStudents;
+    document.getElementById("createdCoursesCount").textContent = totalCourses;
+    document.getElementById("totalStudentsCount").textContent = totalStudents;
     document.getElementById("totalRevenue").textContent = `$${totalRevenue.toFixed(2)}`;
   } catch (error) {
     console.error("Error loading overview data:", error);
@@ -117,11 +122,11 @@ function createEducatorCourseCard(course) {
   card.className = "course-card";
 
   card.innerHTML = `
-    <h3>${course.title}</h3>
-    <p>${course.description}</p>
-    <p><strong>Duration:</strong> ${course.duration}</p>
-    <p><strong>Level:</strong> ${course.level}</p>
-    <p><strong>Price:</strong> $${course.price}</p>
+    <h3>${course.Title}</h3>
+    <p>${course.Description}</p>
+    <p><strong>Duration:</strong> ${course.Duration}</p>
+    <p><strong>Level:</strong> ${course.Level}</p>
+    <p><strong>Price:</strong> $${course.Price}</p>
     <div class="card-actions">
       <button onclick="editCourse(${course.CourseId})" class="cta-button">Edit</button>
       <button onclick="deleteCourse(${course.CourseId})" class="cta-button delete">Delete</button>
@@ -130,6 +135,68 @@ function createEducatorCourseCard(course) {
   `;
 
   return card;
+}
+
+// Validate course form
+function validateCourseForm(formData) {
+  let isValid = true;
+  
+  // Clear any previous error messages
+  const errorElements = document.querySelectorAll('.error-message');
+  errorElements.forEach(el => el.remove());
+  
+  // Validate title
+  if (!formData.title || formData.title.length < 3) {
+    showFieldError('courseTitle', 'Course title must be at least 3 characters long.');
+    isValid = false;
+  }
+  
+  // Validate description
+  if (!formData.description || formData.description.length < 10) {
+    showFieldError('courseDescription', 'Course description must be at least 10 characters long.');
+    isValid = false;
+  }
+  
+  // Validate duration
+  if (!formData.duration) {
+    showFieldError('courseDuration', 'Course duration is required.');
+    isValid = false;
+  }
+  
+  // Validate level
+  if (!formData.level) {
+    showFieldError('courseLevel', 'Course level is required.');
+    isValid = false;
+  }
+  
+  // Validate price
+  if (!formData.price) {
+    showFieldError('coursePrice', 'Course price is required.');
+    isValid = false;
+  } else {
+    // Remove $ sign and validate numeric value
+    const priceValue = formData.price.replace('$', '').trim();
+    if (isNaN(priceValue) || parseFloat(priceValue) < 0) {
+      showFieldError('coursePrice', 'Please enter a valid price (e.g., $99 or 99).');
+      isValid = false;
+    }
+  }
+  
+  return isValid;
+}
+
+// Show field error message
+function showFieldError(fieldId, message) {
+  const field = document.getElementById(fieldId);
+  if (field) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.style.color = 'red';
+    errorDiv.style.fontSize = '0.9em';
+    errorDiv.style.marginTop = '5px';
+    errorDiv.textContent = message;
+    field.parentNode.appendChild(errorDiv);
+  }
 }
 
 // Create course
@@ -172,11 +239,11 @@ async function editCourse(courseId) {
     const course = await getCourse(courseId);
     if (!course) return;
 
-    document.getElementById("courseTitle").value = course.title;
-    document.getElementById("courseDescription").value = course.description;
-    document.getElementById("courseDuration").value = course.duration;
-    document.getElementById("courseLevel").value = course.level;
-    document.getElementById("coursePrice").value = course.price;
+    document.getElementById("courseTitle").value = course.Title;
+    document.getElementById("courseDescription").value = course.Description;
+    document.getElementById("courseDuration").value = course.Duration;
+    document.getElementById("courseLevel").value = course.Level;
+    document.getElementById("coursePrice").value = course.Price;
 
     showSection("create");
 
@@ -414,4 +481,261 @@ function formatDate(date) {
 
 function logout() {
   authManager.logout()
+}
+
+// Quiz Management Functions
+
+// Load courses into quiz course selector
+async function loadQuizCourses() {
+  try {
+    const courses = await getEducatorCourses();
+    const select = document.getElementById('quizCourseSelect');
+    
+    // Clear existing options except the first one
+    select.innerHTML = '<option value="">Choose a course...</option>';
+    
+    courses.forEach(course => {
+      const option = document.createElement('option');
+      option.value = course.CourseId;
+      option.textContent = course.Title;
+      select.appendChild(option);
+    });
+  } catch (error) {
+    console.error('Error loading courses for quiz:', error);
+    alert('Failed to load courses. Please try again.');
+  }
+}
+
+// Load quiz questions for selected course
+async function loadQuizQuestions() {
+  const courseId = document.getElementById('quizCourseSelect').value;
+  const container = document.getElementById('quizQuestionsContainer');
+  const questionsList = document.getElementById('quizQuestionsList');
+  
+  if (!courseId) {
+    container.style.display = 'none';
+    return;
+  }
+  
+  try {
+    const questions = await getQuizQuestions(courseId);
+    container.style.display = 'block';
+    
+    if (questions.length === 0) {
+      questionsList.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">No quiz questions found for this course. Add some questions to get started!</p>';
+      return;
+    }
+    
+    questionsList.innerHTML = questions.map(question => `
+      <div class="quiz-question-card" style="background: white; border: 1px solid #ddd; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+          <h4 style="margin: 0; color: #2c3e50; flex: 1;">${question.Question}</h4>
+          <div style="display: flex; gap: 0.5rem;">
+            <button onclick="editQuizQuestion(${question.QuestionId})" style="background: #f39c12; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.9rem;">Edit</button>
+            <button onclick="deleteQuizQuestion(${question.QuestionId})" style="background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.9rem;">Delete</button>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
+          <div style="padding: 0.5rem; background: ${question.CorrectAnswer == 1 ? '#d5f4e6' : '#f8f9fa'}; border-radius: 4px; border-left: 3px solid ${question.CorrectAnswer == 1 ? '#27ae60' : '#ddd'};">A) ${question.OptionA}</div>
+          <div style="padding: 0.5rem; background: ${question.CorrectAnswer == 2 ? '#d5f4e6' : '#f8f9fa'}; border-radius: 4px; border-left: 3px solid ${question.CorrectAnswer == 2 ? '#27ae60' : '#ddd'};">B) ${question.OptionB}</div>
+          <div style="padding: 0.5rem; background: ${question.CorrectAnswer == 3 ? '#d5f4e6' : '#f8f9fa'}; border-radius: 4px; border-left: 3px solid ${question.CorrectAnswer == 3 ? '#27ae60' : '#ddd'};">C) ${question.OptionC}</div>
+          <div style="padding: 0.5rem; background: ${question.CorrectAnswer == 4 ? '#d5f4e6' : '#f8f9fa'}; border-radius: 4px; border-left: 3px solid ${question.CorrectAnswer == 4 ? '#27ae60' : '#ddd'};">D) ${question.OptionD}</div>
+        </div>
+        <div style="font-size: 0.9rem; color: #27ae60; font-weight: bold;">Correct Answer: Option ${['A', 'B', 'C', 'D'][question.CorrectAnswer - 1]}</div>
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error('Error loading quiz questions:', error);
+    questionsList.innerHTML = '<p style="text-align: center; color: #e74c3c; padding: 2rem;">Failed to load quiz questions. Please try again.</p>';
+  }
+}
+
+// Show add question form
+function showAddQuestionForm() {
+  document.getElementById('addQuestionForm').style.display = 'block';
+  document.getElementById('quizQuestionForm').reset();
+}
+
+// Cancel add question
+function cancelAddQuestion() {
+  document.getElementById('addQuestionForm').style.display = 'none';
+  document.getElementById('quizQuestionForm').reset();
+}
+
+// Add quiz question form submission
+document.addEventListener('DOMContentLoaded', () => {
+  const quizForm = document.getElementById('quizQuestionForm');
+  if (quizForm) {
+    quizForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await addQuizQuestion();
+    });
+  }
+});
+
+// Add new quiz question
+async function addQuizQuestion() {
+  const courseId = document.getElementById('quizCourseSelect').value;
+  
+  if (!courseId) {
+    alert('Please select a course first.');
+    return;
+  }
+  
+  const formData = {
+    courseId: parseInt(courseId),
+    question: document.getElementById('questionText').value.trim(),
+    optionA: document.getElementById('optionA').value.trim(),
+    optionB: document.getElementById('optionB').value.trim(),
+    optionC: document.getElementById('optionC').value.trim(),
+    optionD: document.getElementById('optionD').value.trim(),
+    correctAnswer: parseInt(document.getElementById('correctAnswer').value)
+  };
+  
+  // Validate form data
+  if (!formData.question || !formData.optionA || !formData.optionB || !formData.optionC || !formData.optionD || !formData.correctAnswer) {
+    alert('Please fill in all fields.');
+    return;
+  }
+  
+  try {
+    await createQuizQuestion(formData);
+    alert('Quiz question added successfully!');
+    cancelAddQuestion();
+    await loadQuizQuestions(); // Reload questions
+  } catch (error) {
+    console.error('Error adding quiz question:', error);
+    alert('Failed to add quiz question. Please try again.');
+  }
+}
+
+// Delete quiz question
+async function deleteQuizQuestion(questionId) {
+  if (!confirm('Are you sure you want to delete this quiz question?')) {
+    return;
+  }
+  
+  try {
+    await deleteQuizQuestionAPI(questionId);
+    alert('Quiz question deleted successfully!');
+    await loadQuizQuestions(); // Reload questions
+  } catch (error) {
+    console.error('Error deleting quiz question:', error);
+    alert('Failed to delete quiz question. Please try again.');
+  }
+}
+
+// Edit quiz question (simplified - shows prompt for now)
+async function editQuizQuestion(questionId) {
+  // For now, we'll use a simple approach with prompts
+  // In a real application, you'd want a proper edit form
+  const courseId = document.getElementById('quizCourseSelect').value;
+  const questions = await getQuizQuestions(courseId);
+  const question = questions.find(q => q.QuestionId === questionId);
+  
+  if (!question) {
+    alert('Question not found.');
+    return;
+  }
+  
+  const newQuestion = prompt('Edit question:', question.Question);
+  if (newQuestion === null) return; // User cancelled
+  
+  const newOptionA = prompt('Edit Option A:', question.OptionA);
+  if (newOptionA === null) return;
+  
+  const newOptionB = prompt('Edit Option B:', question.OptionB);
+  if (newOptionB === null) return;
+  
+  const newOptionC = prompt('Edit Option C:', question.OptionC);
+  if (newOptionC === null) return;
+  
+  const newOptionD = prompt('Edit Option D:', question.OptionD);
+  if (newOptionD === null) return;
+  
+  const newCorrectAnswer = prompt('Edit Correct Answer (1-4):', question.CorrectAnswer);
+  if (newCorrectAnswer === null) return;
+  
+  const updatedData = {
+    questionId: questionId,
+    courseId: parseInt(courseId),
+    question: newQuestion.trim(),
+    optionA: newOptionA.trim(),
+    optionB: newOptionB.trim(),
+    optionC: newOptionC.trim(),
+    optionD: newOptionD.trim(),
+    correctAnswer: parseInt(newCorrectAnswer)
+  };
+  
+  if (!updatedData.question || !updatedData.optionA || !updatedData.optionB || !updatedData.optionC || !updatedData.optionD || !updatedData.correctAnswer || updatedData.correctAnswer < 1 || updatedData.correctAnswer > 4) {
+    alert('Please provide valid data for all fields.');
+    return;
+  }
+  
+  try {
+    await updateQuizQuestion(updatedData);
+    alert('Quiz question updated successfully!');
+    await loadQuizQuestions(); // Reload questions
+  } catch (error) {
+    console.error('Error updating quiz question:', error);
+    alert('Failed to update quiz question. Please try again.');
+  }
+}
+
+// API functions for quiz management
+
+// Get quiz questions for a course
+async function getQuizQuestions(courseId) {
+  const response = await fetch(`http://localhost:51265/api/quizzes/questions/${courseId}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch quiz questions');
+  }
+  return await response.json();
+}
+
+// Create new quiz question
+async function createQuizQuestion(questionData) {
+  const response = await fetch('http://localhost:51265/api/quizzes/questions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(questionData)
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to create quiz question');
+  }
+  
+  return await response.json();
+}
+
+// Update quiz question
+async function updateQuizQuestion(questionData) {
+  const response = await fetch(`http://localhost:51265/api/quizzes/questions/${questionData.questionId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(questionData)
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to update quiz question');
+  }
+  
+  return await response.json();
+}
+
+// Delete quiz question
+async function deleteQuizQuestionAPI(questionId) {
+  const response = await fetch(`http://localhost:51265/api/quizzes/questions/${questionId}`, {
+    method: 'DELETE'
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to delete quiz question');
+  }
+  
+  return true;
 }

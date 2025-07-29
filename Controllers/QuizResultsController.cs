@@ -128,6 +128,77 @@ namespace WAPPAssignment.Controllers
             }
             return Ok(questions);
         }
+
+        [HttpPost]
+        [Route("api/quizzes/questions")]
+        public IHttpActionResult CreateQuizQuestion([FromBody] CreateQuizQuestionModel question)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string query = "INSERT INTO QuizQuestions (CourseId, Question, OptionA, OptionB, OptionC, OptionD, CorrectAnswer) VALUES (@CourseId, @Question, @OptionA, @OptionB, @OptionC, @OptionD, @CorrectAnswer)";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@CourseId", question.CourseId);
+                cmd.Parameters.AddWithValue("@Question", question.Question);
+                cmd.Parameters.AddWithValue("@OptionA", question.OptionA);
+                cmd.Parameters.AddWithValue("@OptionB", question.OptionB);
+                cmd.Parameters.AddWithValue("@OptionC", question.OptionC);
+                cmd.Parameters.AddWithValue("@OptionD", question.OptionD);
+                cmd.Parameters.AddWithValue("@CorrectAnswer", question.CorrectAnswer);
+                cmd.ExecuteNonQuery();
+                return Ok("Quiz question created successfully");
+            }
+        }
+
+        [HttpPut]
+        [Route("api/quizzes/questions/{questionId}")]
+        public IHttpActionResult UpdateQuizQuestion(int questionId, [FromBody] CreateQuizQuestionModel question)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string query = "UPDATE QuizQuestions SET Question = @Question, OptionA = @OptionA, OptionB = @OptionB, OptionC = @OptionC, OptionD = @OptionD, CorrectAnswer = @CorrectAnswer WHERE QuestionId = @QuestionId";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@QuestionId", questionId);
+                cmd.Parameters.AddWithValue("@Question", question.Question);
+                cmd.Parameters.AddWithValue("@OptionA", question.OptionA);
+                cmd.Parameters.AddWithValue("@OptionB", question.OptionB);
+                cmd.Parameters.AddWithValue("@OptionC", question.OptionC);
+                cmd.Parameters.AddWithValue("@OptionD", question.OptionD);
+                cmd.Parameters.AddWithValue("@CorrectAnswer", question.CorrectAnswer);
+                int rowsAffected = cmd.ExecuteNonQuery();
+                if (rowsAffected > 0)
+                {
+                    return Ok("Quiz question updated successfully");
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+        }
+
+        [HttpDelete]
+        [Route("api/quizzes/questions/{questionId}")]
+        public IHttpActionResult DeleteQuizQuestion(int questionId)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string query = "DELETE FROM QuizQuestions WHERE QuestionId = @QuestionId";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@QuestionId", questionId);
+                int rowsAffected = cmd.ExecuteNonQuery();
+                if (rowsAffected > 0)
+                {
+                    return Ok("Quiz question deleted successfully");
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+        }
     }
 
     public class QuizResultModel
@@ -144,6 +215,17 @@ namespace WAPPAssignment.Controllers
         public int QuestionId { get; set; }
         public string Question { get; set; }
         public string[] Options { get; set; }
+        public int CorrectAnswer { get; set; }
+    }
+
+    public class CreateQuizQuestionModel
+    {
+        public int CourseId { get; set; }
+        public string Question { get; set; }
+        public string OptionA { get; set; }
+        public string OptionB { get; set; }
+        public string OptionC { get; set; }
+        public string OptionD { get; set; }
         public int CorrectAnswer { get; set; }
     }
 }

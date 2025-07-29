@@ -12,7 +12,8 @@ namespace WAPPAssignment
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
                 routeTemplate: "api/{controller}/{id}",
-                defaults: new { id = RouteParameter.Optional }
+                defaults: new { id = RouteParameter.Optional },
+                constraints: new { httpMethod = new HttpMethodConstraint(HttpMethod.Get, HttpMethod.Post, HttpMethod.Put, HttpMethod.Delete) }
             );
         }
     }
