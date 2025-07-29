@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-link { display: block; margin: 10px 0; padding: 10px; background: #f0f0f0; text-decoration: none; color: #333; }
+        .test-link:hover { background: #e0e0e0; }
+    </style>
+</head>
+<body>
+    <h1>Navigation Test</h1>
+    <p>Click these links to test if the URL rewrite rules are working:</p>
+    
+    <a href="login.html" class="test-link">Test: login.html (should work with rewrite rule)</a>
+    <a href="register.html" class="test-link">Test: register.html (should work with rewrite rule)</a>
+    <a href="student-dashboard.html" class="test-link">Test: student-dashboard.html (should work with rewrite rule)</a>
+    <a href="educator-dashboard.html" class="test-link">Test: educator-dashboard.html (should work with rewrite rule)</a>
+    <a href="admin-dashboard.html" class="test-link">Test: admin-dashboard.html (should work with rewrite rule)</a>
+    
+    <hr>
+    <p>Direct Views folder links (these should also work):</p>
+    <a href="Views/login.html" class="test-link">Direct: Views/login.html</a>
+    <a href="Views/register.html" class="test-link">Direct: Views/register.html</a>
+    
+    <hr>
+    <p>Test CSS and JS file access (these should work with rewrite rules):</p>
+    <a href="styles.css" class="test-link" target="_blank">Test: styles.css</a>
+    <a href="auth-manager.js" class="test-link" target="_blank">Test: auth-manager.js</a>
+    <a href="student-script.js" class="test-link" target="_blank">Test: student-script.js</a>
+    
+    <hr>
+    <p>Back to main site:</p>
+    <a href="Views/index.html" class="test-link">Back to Index</a>
+</body>
+</html>

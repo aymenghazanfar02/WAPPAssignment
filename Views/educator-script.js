@@ -9,29 +9,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Initialize educator dashboard
 async function initializeEducatorDashboard() {
-  // Check if user is logged in and is an educator
-  currentUser = JSON.parse(localStorage.getItem("studyvalyria_current_user"))
-  if (!currentUser) {
-    window.location.href = "index.html";
-    return;
-  }
-
-  if (!currentUser || currentUser.userType !== "educator") {
-    alert("Access denied. Please login as an educator.")
-    window.location.href = "login.html"
+  // Use centralized auth manager to protect page
+  if (!authManager.protectPage('educator')) {
     return
   }
+  
+  currentUser = authManager.getCurrentUser()
 
-  // Fetch latest user data from backend
-  try {
-    const response = await fetch(`http://localhost:51264/api/users/${currentUser.userId}`);
-    if (response.ok) {
-      currentUser = await response.json();
-      localStorage.setItem("studyvalyria_current_user", JSON.stringify(currentUser));
-    }
-  } catch (error) {
-    console.error("Error fetching user data:", error);
-  }
+  // Refresh user data using auth manager
+  await authManager.refreshUserData()
+  currentUser = authManager.getCurrentUser()
 
   try {
 
@@ -92,7 +79,7 @@ async function loadOverviewData() {
     let totalRevenue = 0;
 
     for (const course of courses) {
-      const enrollments = await getEnrollmentsByCourse(course.courseId);
+      const enrollments = await getEnrollmentsByCourse(course.CourseId);
       totalStudents += enrollments.length;
       totalRevenue += enrollments.length * parseFloat(course.price);
     }
@@ -136,9 +123,9 @@ function createEducatorCourseCard(course) {
     <p><strong>Level:</strong> ${course.level}</p>
     <p><strong>Price:</strong> $${course.price}</p>
     <div class="card-actions">
-      <button onclick="editCourse(${course.courseId})" class="cta-button">Edit</button>
-      <button onclick="deleteCourse(${course.courseId})" class="cta-button delete">Delete</button>
-      <button onclick="viewCourseStudents(${course.courseId})" class="cta-button">View Students</button>
+      <button onclick="editCourse(${course.CourseId})" class="cta-button">Edit</button>
+      <button onclick="deleteCourse(${course.CourseId})" class="cta-button delete">Delete</button>
+      <button onclick="viewCourseStudents(${course.CourseId})" class="cta-button">View Students</button>
     </div>
   `;
 
@@ -161,7 +148,7 @@ async function createCourse() {
   }
 
   try {
-    const response = await fetch("http://localhost:51264/api/courses", {
+    const response = await fetch("http://localhost:51265/api/courses", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData)
@@ -253,7 +240,7 @@ async function deleteCourse(courseId) {
   if (!confirmDelete) return;
 
   try {
-    const response = await fetch(`http://localhost:51264/api/courses/${courseId}?educatorId=${currentUser.userId}`, {
+    const response = await fetch(`http://localhost:51265/api/courses/${courseId}?educatorId=${currentUser.userId}`, {
       method: "DELETE"
     });
 
@@ -299,7 +286,7 @@ async function loadStudents() {
     const studentMap = new Map();
 
     for (const course of educatorCourses) {
-      const enrollments = await getEnrollmentsByCourse(course.courseId);
+      const enrollments = await getEnrollmentsByCourse(course.CourseId);
       enrollments.forEach((enrollment) => {
         if (!studentMap.has(enrollment.userId)) {
           studentMap.set(enrollment.userId, {
@@ -381,7 +368,7 @@ async function updateProfile() {
   }
 
   try {
-    const response = await fetch(`http://localhost:51264/api/users/${currentUser.userId}`, {
+    const response = await fetch(`http://localhost:51265/api/users/${currentUser.userId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData)
@@ -402,19 +389,19 @@ async function updateProfile() {
 
 // Utility functions
 async function getEducatorCourses() {
-  const response = await fetch(`http://localhost:51264/api/courses/educator/${currentUser.userId}`);
+  const response = await fetch(`http://localhost:51265/api/courses/educator/${currentUser.userId}`);
   if (!response.ok) throw new Error("Failed to fetch educator courses");
   return await response.json();
 }
 
 async function getCourse(courseId) {
-  const response = await fetch(`http://localhost:51264/api/courses/${courseId}`);
+  const response = await fetch(`http://localhost:51265/api/courses/${courseId}`);
   if (!response.ok) throw new Error("Failed to fetch course");
   return await response.json();
 }
 
 async function getEnrollmentsByCourse(courseId) {
-  const response = await fetch(`http://localhost:51264/api/enrollments/course/${courseId}`);
+  const response = await fetch(`http://localhost:51265/api/enrollments/course/${courseId}`);
   if (!response.ok) throw new Error("Failed to fetch enrollments");
   return await response.json();
 }
@@ -426,9 +413,5 @@ function formatDate(date) {
 }
 
 function logout() {
-  const confirmLogout = confirm("Are you sure you want to logout?")
-  if (confirmLogout) {
-    localStorage.removeItem("studyvalyria_current_user")
-    window.location.href = "index.html"
-  }
+  authManager.logout()
 }

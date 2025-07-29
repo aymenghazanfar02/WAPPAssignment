@@ -9,25 +9,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Initialize admin dashboard
 async function initializeAdminDashboard() {
-  // Check if user is logged in and is an admin
-  currentUser = JSON.parse(localStorage.getItem("studyvalyria_current_user"))
-
-  if (!currentUser || currentUser.userType !== "admin") {
-    alert("Access denied. Please login as an administrator.")
-    window.location.href = "login.html"
+  // Use centralized auth manager to protect page
+  if (!authManager.protectPage('admin')) {
     return
   }
+  
+  currentUser = authManager.getCurrentUser()
 
-  // Fetch latest user data from backend
-  try {
-    const response = await fetch(`http://localhost:51264/api/users/${currentUser.id}`);
-    if (response.ok) {
-      currentUser = await response.json();
-      localStorage.setItem("studyvalyria_current_user", JSON.stringify(currentUser));
-    }
-  } catch (error) {
-    console.error("Error fetching user data:", error);
-  }
+  // Refresh user data using auth manager
+  await authManager.refreshUserData()
+  currentUser = authManager.getCurrentUser()
 
   // Update welcome message
   document.getElementById("welcomeMessage").textContent = `Welcome, ${currentUser.firstName}!`
@@ -96,7 +87,7 @@ async function loadOverviewData() {
 // Load system activity
 async function loadSystemActivity() {
   try {
-    const response = await fetch('http://localhost:51264/api/activity/system');
+    const response = await fetch('http://localhost:51265/api/activity/system');
     if (response.ok) {
       const activities = await response.json();
       displaySystemActivity(activities);
@@ -172,7 +163,7 @@ function createUserCard(user) {
             <div>
                 <h3>${user.firstName} ${user.lastName}</h3>
                 <p><strong>Email:</strong> ${user.email}</p>
-                <p><strong>Type:</strong> ${user.userType.charAt(0).toUpperCase() + user.userType.slice(1)}</p>
+                <p><strong>Type:</strong> ${user.userType ? user.userType.charAt(0).toUpperCase() + user.userType.slice(1) : 'Unknown'}</p>
                 <p><strong>Registered:</strong> ${formatDate(new Date(user.registrationDate))}</p>
                 ${user.userType === "student" ? `<p><strong>Enrollments:</strong> ${enrollmentCount}</p>` : ""}
                 ${user.userType === "educator" ? `<p><strong>Courses:</strong> ${courseCount}</p>` : ""}
@@ -258,7 +249,7 @@ async function approveEducator(userId) {
     const confirmApproval = confirm(`Approve ${user.firstName} ${user.lastName} as an educator?`)
     if (!confirmApproval) return
 
-    const response = await fetch(`http://localhost:51264/api/users/approve/${userId}`, {
+    const response = await fetch(`http://localhost:51265/api/users/approve/${userId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' }
     });
@@ -290,7 +281,7 @@ async function toggleUserStatus(userId) {
     const confirmAction = confirm(`Are you sure you want to ${action} ${user.firstName} ${user.lastName}?`);
     if (!confirmAction) return;
 
-    const response = await fetch(`http://localhost:51264/api/users/${userId}/status`, {
+    const response = await fetch(`http://localhost:51265/api/users/${userId}/status`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -358,7 +349,7 @@ async function deleteUser(userId) {
     );
     if (!confirmDelete) return;
 
-    const response = await fetch(`http://localhost:51264/api/users/${userId}`, {
+    const response = await fetch(`http://localhost:51265/api/users/${userId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -402,7 +393,7 @@ async function createAdminCourseCard(course) {
 
   // Get enrollment count for this course
   const enrollments = await getAllEnrollments();
-  const courseEnrollments = enrollments.filter((enrollment) => enrollment.courseId === course.courseId);
+  const courseEnrollments = enrollments.filter((enrollment) => enrollment.CourseId === course.CourseId);
   const enrollmentCount = courseEnrollments.length
 
   card.innerHTML = `
@@ -413,10 +404,10 @@ async function createAdminCourseCard(course) {
         <p><strong>Enrolled Students:</strong> ${enrollmentCount}</p>
         <p>${course.description}</p>
         <div style="margin-top: 1rem;">
-            <button onclick="viewCourseAnalytics(${course.courseId})" class="cta-button" style="padding: 0.5rem 1rem; font-size: 0.9rem; margin-right: 0.5rem;">
+            <button onclick="viewCourseAnalytics(${course.CourseId})" class="cta-button" style="padding: 0.5rem 1rem; font-size: 0.9rem; margin-right: 0.5rem;">
                 View Analytics
             </button>
-            <button onclick="manageCourse(${course.courseId})" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #e67e22; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            <button onclick="manageCourse(${course.CourseId})" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #e67e22; color: white; border: none; border-radius: 5px; cursor: pointer;">
                 Manage
             </button>
         </div>
@@ -507,7 +498,7 @@ async function deleteCourseAdmin(courseId) {
     const confirmDelete = confirm(`Are you sure you want to delete the course "${course.title}"? This action cannot be undone.`);
     
     if (confirmDelete) {
-      const response = await fetch(`http://localhost:51264/api/courses/${courseId}`, {
+      const response = await fetch(`http://localhost:51265/api/courses/${courseId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'
@@ -545,7 +536,7 @@ async function loadAnalytics() {
     const educatorCount = users.filter((user) => user.userType === "educator").length
     const averageEnrollmentsPerCourse = courses.length > 0 ? (enrollments.length / courses.length).toFixed(1) : 0
     const totalRevenue = enrollments.reduce((sum, enrollment) => {
-      const course = courses.find(c => c.courseId === enrollment.courseId);
+      const course = courses.find(c => c.CourseId === enrollment.CourseId);
       return sum + (course ? course.price : 0);
     }, 0);
 
@@ -602,7 +593,7 @@ function saveSettings() {
 // Utility functions
 async function getAllUsers() {
   try {
-    const response = await fetch('http://localhost:51264/api/users');
+    const response = await fetch('http://localhost:51265/api/users');
     if (response.ok) {
       return await response.json();
     }
@@ -615,7 +606,7 @@ async function getAllUsers() {
 
 async function getAllCourses() {
   try {
-    const response = await fetch('http://localhost:51264/api/courses');
+    const response = await fetch('http://localhost:51265/api/courses');
     if (response.ok) {
       return await response.json();
     }
@@ -628,7 +619,7 @@ async function getAllCourses() {
 
 async function getAllEnrollments() {
   try {
-    const response = await fetch('http://localhost:51264/api/enrollments');
+    const response = await fetch('http://localhost:51265/api/enrollments');
     if (response.ok) {
       return await response.json();
     }
@@ -644,9 +635,5 @@ function formatDate(date) {
 }
 
 function logout() {
-  const confirmLogout = confirm("Are you sure you want to logout?")
-  if (confirmLogout) {
-    localStorage.removeItem("studyvalyria_current_user")
-    window.location.href = "index.html"
-  }
+  authManager.logout()
 }

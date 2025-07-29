@@ -43,7 +43,7 @@ function handleRegistration() {
   }
 
   // Send to backend
-  fetch('http://localhost:51264/api/users/register', {
+  fetch('http://localhost:51265/api/users/register', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -188,7 +188,7 @@ function isValidPassword(password) {
 // Check if email already exists
 async function emailExists(email) {
   try {
-    const response = await fetch(`http://localhost:51264/api/users/check-email?email=${encodeURIComponent(email)}`)
+    const response = await fetch(`http://localhost:51265/api/users/check-email?email=${encodeURIComponent(email)}`)
     if (response.ok) {
       const result = await response.json()
       return result.exists
@@ -217,14 +217,14 @@ function redirectAfterRegistration(user) {
   setTimeout(() => {
     switch (user.userType) {
       case "student":
-        window.location.href = "student-dashboard.html"
+        authManager.redirectToDashboard()
         break
       case "educator":
         alert("Your educator account is pending approval. You will be notified once approved.")
-        window.location.href = "login.html"
+        authManager.redirectToLogin()
         break
       default:
-        window.location.href = "login.html"
+        authManager.redirectToLogin()
     }
   }, 1000)
 }

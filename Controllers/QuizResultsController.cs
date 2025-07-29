@@ -17,22 +17,24 @@ namespace WAPPAssignment.Controllers
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
+                
+                // Save quiz result
                 string query = "INSERT INTO QuizResults (UserId, CourseId, Score, Date) VALUES (@UserId, @CourseId, @Score, @Date)";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@UserId", result.UserId);
                 cmd.Parameters.AddWithValue("@CourseId", result.CourseId);
                 cmd.Parameters.AddWithValue("@Score", result.Score);
                 cmd.Parameters.AddWithValue("@Date", DateTime.Now);
-
-                try
-                {
-                    cmd.ExecuteNonQuery();
-                    return Ok("Quiz result saved successfully");
-                }
-                catch (Exception ex)
-                {
-                    return InternalServerError(ex);
-                }
+                cmd.ExecuteNonQuery();
+                
+                // Update progress - each quiz completion adds 25% progress
+                string progressQuery = "UPDATE Enrollments SET Progress = CASE WHEN Progress + 25 > 100 THEN 100 ELSE Progress + 25 END WHERE UserId = @UserId AND CourseId = @CourseId";
+                SqlCommand progressCmd = new SqlCommand(progressQuery, conn);
+                progressCmd.Parameters.AddWithValue("@UserId", result.UserId);
+                progressCmd.Parameters.AddWithValue("@CourseId", result.CourseId);
+                progressCmd.ExecuteNonQuery();
+                
+                return Ok("Quiz result saved successfully");
             }
         }
 

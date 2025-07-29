@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudyValyria - Digital Learning Platform</title>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/Views/styles.css">
 </head>
 <body>
     <nav class="navbar">
@@ -17,8 +17,10 @@
                 <li><a href="#courses">Courses</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#contact">Contact</a></li>
-                <li><a href="/Views/login.html" class="login-btn">Login</a></li>
-                <li><a href="/Views/register.html" class="register-btn">Register</a></li>
+                <li><a href="#" class="login-btn" id="loginBtn" onclick="openLoginModal()">Login</a></li>
+                <li><a href="/Views/register.html" class="register-btn" id="registerBtn">Register</a></li>
+                <li><a href="#" class="dashboard-btn" id="dashboardBtn" style="display: none;">Dashboard</a></li>
+                <li><a href="#" class="signout-btn" id="signoutBtn" style="display: none;">Sign Out</a></li>
             </ul>
         </div>
     </nav>
@@ -71,6 +73,51 @@
         </div>
     </footer>
 
-    <script src="/guest-script.js"></script>
+</main>
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeLoginModal()">&times;</span>
+            <h2>Login to Your Account</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" name="email" required>
+                    <div class="error-message" id="emailError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" name="password" required>
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit">Login</button>
+                </div>
+            </form>
+
+            <p style="text-align: center; margin-top: 1rem;">
+                Don't have an account? <a href="/Views/register.html">Register here</a>
+            </p>
+
+            <!-- Demo Accounts Section -->
+            <div style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 5px;">
+                <h4>Demo Accounts (for testing):</h4>
+                <p><strong>Student:</strong> student@demo.com / password123</p>
+                <p><strong>Educator:</strong> educator@demo.com / password123</p>
+                <p><strong>Admin:</strong> admin@demo.com / password123</p>
+                <div style="margin-top: 1rem;">
+                    <button type="button" onclick="fillDemoCredentials('student')" style="margin-right: 0.5rem;">Fill Student</button>
+                    <button type="button" onclick="fillDemoCredentials('educator')" style="margin-right: 0.5rem;">Fill Educator</button>
+                    <button type="button" onclick="fillDemoCredentials('admin')">Fill Admin</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/Views/auth-manager.js"></script>
+    <script src="/Views/guest-script.js"></script>
 </body>
 </html>

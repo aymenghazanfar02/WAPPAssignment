@@ -53,10 +53,117 @@ body {
 }
 
 .login-btn,
-.register-btn {
+.register-btn,
+.dashboard-btn,
+.signout-btn {
   background: #3498db;
   padding: 0.5rem 1rem;
   border-radius: 5px;
+}
+
+.dashboard-btn {
+  background: #27ae60;
+}
+
+.signout-btn {
+  background: #e74c3c;
+}
+
+/* Modal Styles */
+.modal {
+  display: none !important;
+  position: fixed !important;
+  z-index: 9999 !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  overflow: hidden !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  /* Chrome-specific flexbox fixes */
+  -webkit-box-align: center !important;
+  -webkit-box-pack: center !important;
+  -webkit-justify-content: center !important;
+  -webkit-align-items: center !important;
+  /* Additional Chrome fixes */
+  -webkit-transform: translateZ(0) !important;
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+}
+
+.modal.show {
+  display: flex !important;
+  /* Chrome-specific flexbox display fixes */
+  display: -webkit-flex !important;
+  display: -ms-flexbox !important;
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+  overflow: hidden;
+}
+
+.modal-content {
+  background-color: #fefefe !important;
+  margin: 0 !important;
+  padding: 30px !important;
+  border: none !important;
+  border-radius: 15px !important;
+  width: 90% !important;
+  max-width: 450px !important;
+  position: relative !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+  animation: modalFadeIn 0.3s ease-out !important;
+  transform: none !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  /* Chrome fallback positioning */
+  margin: auto !important;
+  align-self: center !important;
+  justify-self: center !important;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.close:hover,
+.close:focus {
+  color: white;
+  background-color: #e74c3c;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 /* Hero Section */
@@ -328,5 +435,17 @@ footer {
 
   .courses-grid {
     grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    margin: 0 !important;
+    width: 95% !important;
+    max-width: 400px !important;
+    padding: 20px !important;
+  }
+
+  .close {
+    right: 15px;
+    top: 10px;
   }
 }

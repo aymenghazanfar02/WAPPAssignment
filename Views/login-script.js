@@ -29,7 +29,7 @@ function handleLogin() {
   }
 
   // Send to backend
-  fetch('http://localhost:51264/api/auth/login', {
+  fetch('http://localhost:51265/api/auth/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -46,8 +46,9 @@ function handleLogin() {
     // Store user session
     localStorage.setItem("studyvalyria_current_user", JSON.stringify(data));
     showSuccess("Login successful! Redirecting...");
-    // Redirect
-    redirectToDashboard(data);
+    // Check if we're on index page and redirect accordingly
+    const isIndexPage = window.location.pathname.includes('index.html') || window.location.pathname === '/';
+    redirectToDashboard(data, isIndexPage);
   })
   .catch(error => {
     showError('passwordError', error.message || 'Invalid email or password.');
@@ -81,22 +82,14 @@ function isValidEmail(email) {
 }
 
 // Redirect to appropriate dashboard
-function redirectToDashboard(user) {
-  setTimeout(() => {
-    switch (user.userType) {
-      case "student":
-        window.location.href = "student-dashboard.html"
-        break
-      case "educator":
-        window.location.href = "educator-dashboard.html"
-        break
-      case "admin":
-        window.location.href = "admin-dashboard.html"
-        break
-      default:
-        window.location.href = "index.html"
-    }
-  }, 1000)
+function redirectToDashboard(user, stayOnIndex = false) {
+  if (stayOnIndex) {
+    // Update navigation for logged-in user
+    updateNavigationForLoggedInUser(user)
+    return
+  }
+  
+  authManager.redirectToDashboard()
 }
 
 // Demo accounts are now managed by the backend
@@ -136,7 +129,15 @@ function showSuccess(message) {
     successElement.className = "success-message"
     successElement.style.cssText =
       "text-align: center; margin-top: 1rem; padding: 0.5rem; background: #d4edda; color: #155724; border-radius: 5px;"
-    document.querySelector(".form-container").appendChild(successElement)
+    
+    // Try to append to modal content first, then fallback to form container
+    const modalContent = document.querySelector(".modal-content")
+    const formContainer = document.querySelector(".form-container")
+    const targetContainer = modalContent || formContainer
+    
+    if (targetContainer) {
+      targetContainer.appendChild(successElement)
+    }
   }
   successElement.textContent = message
   successElement.style.display = "block"

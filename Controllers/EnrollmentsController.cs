@@ -50,7 +50,7 @@ namespace WAPPAssignment.Controllers
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                string query = "INSERT INTO Enrollments (UserId, CourseId) VALUES (@UserId, @CourseId)";
+                string query = "INSERT INTO Enrollments (UserId, CourseId, Progress) VALUES (@UserId, @CourseId, 0)";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@UserId", enrollment.UserId);
                 cmd.Parameters.AddWithValue("@CourseId", enrollment.CourseId);
@@ -128,7 +128,31 @@ namespace WAPPAssignment.Controllers
         }
 
         [HttpDelete]
-        [Route("api/enrollments/{enrollmentId}")]
+        [Route("api/enrollments/{userId}/{courseId}")]
+        public IHttpActionResult UnenrollByUserAndCourse(int userId, int courseId)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string query = "DELETE FROM Enrollments WHERE UserId = @UserId AND CourseId = @CourseId";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@UserId", userId);
+                cmd.Parameters.AddWithValue("@CourseId", courseId);
+
+                int rowsAffected = cmd.ExecuteNonQuery();
+                if (rowsAffected > 0)
+                {
+                    return Ok("Unenrolled successfully");
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+        }
+
+        [HttpDelete]
+        [Route("api/enrollments/by-id/{enrollmentId}")]
         public IHttpActionResult Unenroll(int enrollmentId)
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -142,6 +166,31 @@ namespace WAPPAssignment.Controllers
                 if (rowsAffected > 0)
                 {
                     return Ok("Unenrolled successfully");
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+        }
+
+        [HttpPut]
+        [Route("api/enrollments/progress")]
+        public IHttpActionResult UpdateProgress([FromBody] ProgressUpdateModel progressUpdate)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string query = "UPDATE Enrollments SET Progress = @Progress WHERE UserId = @UserId AND CourseId = @CourseId";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@Progress", progressUpdate.Progress);
+                cmd.Parameters.AddWithValue("@UserId", progressUpdate.UserId);
+                cmd.Parameters.AddWithValue("@CourseId", progressUpdate.CourseId);
+
+                int rowsAffected = cmd.ExecuteNonQuery();
+                if (rowsAffected > 0)
+                {
+                    return Ok("Progress updated successfully");
                 }
                 else
                 {
@@ -178,5 +227,12 @@ namespace WAPPAssignment.Controllers
         public int Progress { get; set; }
         public string CourseTitle { get; set; }
         public decimal CoursePrice { get; set; }
+    }
+
+    public class ProgressUpdateModel
+    {
+        public int UserId { get; set; }
+        public int CourseId { get; set; }
+        public int Progress { get; set; }
     }
 }

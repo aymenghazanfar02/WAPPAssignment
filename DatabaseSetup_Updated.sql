@@ -1,3 +1,15 @@
+-- Updated Database Setup with Realistic Courses and Mock Data
+
+-- Drop existing tables if they exist (in correct order to handle foreign keys)
+IF OBJECT_ID('QuizQuestions', 'U') IS NOT NULL DROP TABLE QuizQuestions;
+IF OBJECT_ID('QuizResults', 'U') IS NOT NULL DROP TABLE QuizResults;
+IF OBJECT_ID('Enrollments', 'U') IS NOT NULL DROP TABLE Enrollments;
+IF OBJECT_ID('ActivityLogs', 'U') IS NOT NULL DROP TABLE ActivityLogs;
+IF OBJECT_ID('Activities', 'U') IS NOT NULL DROP TABLE Activities;
+IF OBJECT_ID('ContactMessages', 'U') IS NOT NULL DROP TABLE ContactMessages;
+IF OBJECT_ID('Courses', 'U') IS NOT NULL DROP TABLE Courses;
+IF OBJECT_ID('Users', 'U') IS NOT NULL DROP TABLE Users;
+
 -- Create Users table
 CREATE TABLE Users (
     UserId INT PRIMARY KEY IDENTITY(1,1),
@@ -113,6 +125,27 @@ INSERT INTO Courses (Title, Description, EducatorId, Duration, Price, Level) VAL
 ('Cybersecurity Fundamentals and Ethical Hacking', 'Learn essential cybersecurity concepts, network security, penetration testing, and ethical hacking techniques. Hands-on labs with real security tools and scenarios.', 3, '10 weeks', 349.99, 'Intermediate'),
 ('Mobile App Development with Flutter', 'Build cross-platform mobile applications using Flutter and Dart. Learn UI design, state management, API integration, and app store deployment for both iOS and Android.', 1, '14 weeks', 279.99, 'Beginner');
 
+-- Insert enrollments (students enrolled in various courses)
+INSERT INTO Enrollments (UserId, CourseId, EnrollmentDate, Progress) VALUES
+-- Course 1 (Full-Stack Web Development) enrollments
+(4, 1, DATEADD(week, -8, GETDATE()), 75),  -- Alex Thompson
+(5, 1, DATEADD(week, -6, GETDATE()), 60),  -- Maria Garcia
+(7, 1, DATEADD(week, -7, GETDATE()), 85),  -- Lisa Brown
+(8, 1, DATEADD(week, -5, GETDATE()), 45),  -- David Lee
+-- Course 2 (Data Science) enrollments
+(5, 2, DATEADD(week, -10, GETDATE()), 90), -- Maria Garcia
+(8, 2, DATEADD(week, -9, GETDATE()), 70),  -- David Lee
+(9, 2, DATEADD(week, -8, GETDATE()), 80),  -- Sophie Anderson
+-- Course 3 (Cybersecurity) enrollments
+(4, 3, DATEADD(week, -4, GETDATE()), 55),  -- Alex Thompson
+(6, 3, DATEADD(week, -6, GETDATE()), 65),  -- James Wilson
+(7, 3, DATEADD(week, -3, GETDATE()), 40),  -- Lisa Brown
+-- Course 4 (Mobile Development) enrollments
+(4, 4, DATEADD(week, -2, GETDATE()), 25),  -- Alex Thompson
+(5, 4, DATEADD(week, -3, GETDATE()), 35),  -- Maria Garcia
+(6, 4, DATEADD(week, -4, GETDATE()), 50),  -- James Wilson
+(9, 4, DATEADD(week, -1, GETDATE()), 15);  -- Sophie Anderson
+
 -- Insert comprehensive quiz questions for all courses
 
 -- Course 1: Full-Stack Web Development Quiz Questions
@@ -121,70 +154,60 @@ INSERT INTO QuizQuestions (CourseId, Question, OptionA, OptionB, OptionC, Option
 (1, 'Which HTTP method is typically used to create new resources?', 'GET', 'POST', 'PUT', 'DELETE', 1),
 (1, 'What does JSX stand for in React?', 'JavaScript XML', 'Java Syntax Extension', 'JSON XML', 'JavaScript Extension', 0),
 (1, 'Which Node.js framework is commonly used for building APIs?', 'Angular', 'Vue.js', 'Express.js', 'React.js', 2),
-(1, 'What is the purpose of middleware in Express.js?', 'Database connection', 'Request/response processing', 'Frontend rendering', 'File storage', 1),
+(1, 'What is the purpose of middleware in Express.js?', 'Database connection', 'Request/response processing', 'Frontend rendering', 'File storage', 1);
 
 -- Course 2: Data Science and Machine Learning Quiz Questions
+INSERT INTO QuizQuestions (CourseId, Question, OptionA, OptionB, OptionC, OptionD, CorrectAnswer) VALUES
 (2, 'Which Python library is primarily used for data manipulation?', 'matplotlib', 'pandas', 'seaborn', 'plotly', 1),
 (2, 'What does supervised learning require?', 'Unlabeled data', 'Labeled training data', 'No data', 'Only test data', 1),
 (2, 'Which algorithm is commonly used for classification problems?', 'K-means', 'Linear regression', 'Random Forest', 'PCA', 2),
 (2, 'What is the purpose of cross-validation?', 'Data cleaning', 'Model evaluation', 'Feature selection', 'Data visualization', 1),
-(2, 'Which metric is used to evaluate regression models?', 'Accuracy', 'Precision', 'Mean Squared Error', 'F1-score', 2),
+(2, 'Which metric is used to evaluate regression models?', 'Accuracy', 'Precision', 'Mean Squared Error', 'F1-score', 2);
 
 -- Course 3: Cybersecurity Quiz Questions
+INSERT INTO QuizQuestions (CourseId, Question, OptionA, OptionB, OptionC, OptionD, CorrectAnswer) VALUES
 (3, 'What does CIA stand for in cybersecurity?', 'Central Intelligence Agency', 'Confidentiality, Integrity, Availability', 'Computer Information Access', 'Cyber Intelligence Analysis', 1),
 (3, 'Which type of attack involves overwhelming a server with requests?', 'Phishing', 'SQL Injection', 'DDoS', 'Man-in-the-middle', 2),
 (3, 'What is the primary purpose of a firewall?', 'Data encryption', 'Network traffic filtering', 'Password management', 'Virus scanning', 1),
 (3, 'Which tool is commonly used for network scanning?', 'Wireshark', 'Nmap', 'Metasploit', 'Burp Suite', 1),
-(3, 'What is social engineering in cybersecurity?', 'Network configuration', 'Manipulating people to reveal information', 'Software development', 'Hardware installation', 1),
+(3, 'What is social engineering in cybersecurity?', 'Network configuration', 'Manipulating people to reveal information', 'Software development', 'Hardware installation', 1);
 
 -- Course 4: Mobile App Development Quiz Questions
+INSERT INTO QuizQuestions (CourseId, Question, OptionA, OptionB, OptionC, OptionD, CorrectAnswer) VALUES
 (4, 'What programming language does Flutter primarily use?', 'Java', 'Kotlin', 'Dart', 'Swift', 2),
 (4, 'Which widget is used for layout in Flutter?', 'Text', 'Container', 'Column', 'All of the above', 3),
 (4, 'What is the main advantage of Flutter?', 'Native performance only', 'Cross-platform development', 'iOS only development', 'Web only development', 1),
 (4, 'Which method is called when a Flutter widget is first created?', 'dispose()', 'build()', 'initState()', 'setState()', 2),
 (4, 'What is a StatefulWidget in Flutter?', 'A widget that never changes', 'A widget that can change its state', 'A widget for static content', 'A widget for navigation', 1);
 
--- Insert sample enrollments
-INSERT INTO Enrollments (UserId, CourseId, EnrollmentDate, Progress) VALUES
--- Alex Thompson enrollments
-(4, 1, DATEADD(month, -2, GETDATE()), 75),
-(4, 4, DATEADD(month, -1, GETDATE()), 45),
--- Maria Garcia enrollments
-(5, 2, DATEADD(month, -2, GETDATE()), 60),
-(5, 1, DATEADD(week, -3, GETDATE()), 30),
--- James Wilson enrollments
-(6, 3, DATEADD(month, -4, GETDATE()), 90),
-(6, 1, DATEADD(month, -1, GETDATE()), 25),
--- Lisa Brown enrollments
-(7, 1, DATEADD(week, -2, GETDATE()), 85),
-(7, 4, DATEADD(week, -1, GETDATE()), 20),
--- David Lee enrollments
-(8, 2, DATEADD(month, -3, GETDATE()), 70),
-(8, 3, DATEADD(week, -2, GETDATE()), 15),
--- Sophie Anderson enrollments
-(9, 2, DATEADD(month, -2, GETDATE()), 80),
-(9, 1, DATEADD(week, -1, GETDATE()), 10);
-
 -- Insert sample quiz results
 INSERT INTO QuizResults (UserId, CourseId, Score, Date) VALUES
--- Alex Thompson quiz results
-(4, 1, 85, DATEADD(week, -3, GETDATE())),
-(4, 1, 92, DATEADD(week, -1, GETDATE())),
-(4, 4, 78, DATEADD(day, -5, GETDATE())),
--- Maria Garcia quiz results
+-- Course 1 quiz results
+(4, 1, 85, DATEADD(week, -2, GETDATE())),
+(5, 1, 78, DATEADD(week, -1, GETDATE())),
+(7, 1, 92, DATEADD(week, -3, GETDATE())),
+-- Course 2 quiz results
 (5, 2, 88, DATEADD(week, -4, GETDATE())),
-(5, 2, 91, DATEADD(week, -2, GETDATE())),
-(5, 1, 76, DATEADD(day, -3, GETDATE())),
--- James Wilson quiz results
-(6, 3, 94, DATEADD(month, -3, GETDATE())),
-(6, 3, 89, DATEADD(month, -2, GETDATE())),
-(6, 3, 96, DATEADD(week, -2, GETDATE())),
--- Lisa Brown quiz results
-(7, 1, 82, DATEADD(week, -1, GETDATE())),
-(7, 1, 87, DATEADD(day, -2, GETDATE())),
--- David Lee quiz results
-(8, 2, 79, DATEADD(week, -5, GETDATE())),
-(8, 2, 84, DATEADD(week, -3, GETDATE())),
--- Sophie Anderson quiz results
-(9, 2, 93, DATEADD(week, -3, GETDATE())),
-(9, 2, 89, DATEADD(week, -1, GETDATE()));
+(8, 2, 76, DATEADD(week, -2, GETDATE())),
+(9, 2, 94, DATEADD(week, -1, GETDATE())),
+-- Course 3 quiz results
+(4, 3, 72, DATEADD(week, -1, GETDATE())),
+(6, 3, 89, DATEADD(week, -2, GETDATE())),
+-- Course 4 quiz results
+(6, 4, 81, DATEADD(week, -1, GETDATE())),
+(9, 4, 67, DATEADD(day, -3, GETDATE()));
+
+-- Insert sample activities
+INSERT INTO Activities (Type, Message, Date) VALUES
+('System', 'Database initialized successfully', GETDATE()),
+('Course', 'New course "Full-Stack Web Development" created', DATEADD(month, -3, GETDATE())),
+('Course', 'New course "Data Science and Machine Learning" created', DATEADD(month, -2, GETDATE())),
+('Enrollment', 'Student enrollment surge in cybersecurity course', DATEADD(week, -1, GETDATE())),
+('Quiz', 'High completion rate for mobile development quizzes', DATEADD(day, -2, GETDATE()));
+
+PRINT 'Database setup completed successfully with realistic course data!';
+PRINT 'Courses created: 4';
+PRINT 'Users created: 10 (3 educators, 6 students, 1 admin)';
+PRINT 'Enrollments created: 14';
+PRINT 'Quiz questions created: 20 (5 per course)';
+PRINT 'Quiz results created: 10';}}}

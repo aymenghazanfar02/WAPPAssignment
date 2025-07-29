@@ -3,8 +3,15 @@
 // Initialize page when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
   loadCourses()
+  checkAuthenticationState()
   setupContactForm()
   setupSmoothScrolling()
+  
+  // Add login form event listener
+  const loginForm = document.getElementById('loginForm')
+  if (loginForm) {
+    loginForm.addEventListener('submit', handleLogin)
+  }
 })
 
 let coursesData = [];
@@ -14,15 +21,23 @@ async function loadCourses() {
   const coursesGrid = document.getElementById("coursesGrid")
   if (!coursesGrid) return
 
-  try {
-    const response = await fetch('http://localhost:51264/api/courses');
-    if (!response.ok) throw new Error('Failed to fetch courses');
-    coursesData = await response.json();
-    displayCourses(coursesData);
-  } catch (error) {
-    console.error('Error fetching courses:', error);
-    coursesGrid.innerHTML = '<p>Error loading courses. Please try again later.</p>';
+  const ports = [51265, 51264];
+  
+  for (const port of ports) {
+    try {
+      const response = await fetch(`http://localhost:${port}/api/courses`);
+      if (!response.ok) throw new Error(`Failed to fetch courses from port ${port}`);
+      coursesData = await response.json();
+      displayCourses(coursesData);
+      return; // Success, exit the function
+    } catch (error) {
+      console.warn(`Error fetching courses from port ${port}:`, error);
+    }
   }
+  
+  // If all ports failed
+  console.error('Error fetching courses: All API endpoints failed');
+  coursesGrid.innerHTML = '<p>Error loading courses. Please try again later.</p>';
 }
 
 function displayCourses(courses) {
@@ -107,7 +122,7 @@ async function handleContactSubmission() {
 
   try {
     // Send contact submission to backend
-    const response = await fetch('http://localhost:51264/api/contact', {
+    const response = await fetch('http://localhost:51265/api/contact', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -224,10 +239,224 @@ function getCourseById(courseId) {
   return coursesData.find((course) => course.CourseId === courseId)
 }
 
+// Check authentication state and update navigation
+function checkAuthenticationState() {
+  const currentUser = localStorage.getItem("studyvalyria_current_user")
+  
+  if (currentUser) {
+    try {
+      const user = JSON.parse(currentUser)
+      updateNavigationForLoggedInUser(user)
+    } catch (error) {
+      console.error('Error parsing user data:', error)
+      localStorage.removeItem("studyvalyria_current_user")
+    }
+  }
+}
+
+// Update navigation for logged in user
+function updateNavigationForLoggedInUser(user) {
+  const loginBtn = document.getElementById("loginBtn")
+  const registerBtn = document.getElementById("registerBtn")
+  const dashboardBtn = document.getElementById("dashboardBtn")
+  const signoutBtn = document.getElementById("signoutBtn")
+  
+  if (loginBtn) loginBtn.style.display = "none"
+  if (registerBtn) registerBtn.style.display = "none"
+  if (dashboardBtn) {
+    dashboardBtn.style.display = "block"
+    dashboardBtn.addEventListener("click", (e) => {
+      e.preventDefault()
+      redirectToDashboard(user)
+    })
+  }
+  if (signoutBtn) {
+    signoutBtn.style.display = "block"
+    signoutBtn.addEventListener("click", (e) => {
+      e.preventDefault()
+      handleSignOut()
+    })
+  }
+}
+
+// Redirect to appropriate dashboard based on user role
+function redirectToDashboard(user) {
+  authManager.redirectToDashboard()
+}
+
+// Handle sign out
+function handleSignOut() {
+  localStorage.removeItem("studyvalyria_current_user")
+  alert("You have been signed out successfully.")
+  window.location.reload()
+}
+
+// Modal functions
+function openLoginModal() {
+  const modal = document.getElementById('loginModal')
+  if (modal) {
+    // Force reflow for Chrome compatibility
+    modal.style.display = 'none'
+    modal.offsetHeight // Force reflow
+    
+    modal.classList.add('show')
+    modal.style.display = 'flex'
+    document.body.classList.add('modal-open')
+    clearLoginForm()
+    clearErrors()
+    
+    // Additional Chrome fix - ensure proper positioning
+    setTimeout(() => {
+      modal.style.alignItems = 'center'
+      modal.style.justifyContent = 'center'
+    }, 0)
+  }
+}
+
+function closeLoginModal() {
+  const modal = document.getElementById('loginModal')
+  modal.classList.remove('show')
+  modal.style.display = 'none'
+  document.body.classList.remove('modal-open')
+  clearLoginForm()
+}
+
+function clearLoginForm() {
+  document.getElementById('loginEmail').value = ''
+  document.getElementById('loginPassword').value = ''
+  clearErrors()
+}
+
+function clearErrors() {
+  document.getElementById('emailError').textContent = ''
+  document.getElementById('passwordError').textContent = ''
+}
+
+// Login form submission
+function handleLogin(event) {
+  event.preventDefault()
+  
+  const email = document.getElementById('loginEmail').value.trim()
+  const password = document.getElementById('loginPassword').value
+  
+  if (!validateLoginForm(email, password)) {
+    return
+  }
+  
+  const loginData = { email, password }
+  
+  fetch('http://localhost:51265/api/auth/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(loginData)
+  })
+  .then(response => {
+    if (!response.ok) {
+      return response.text().then(text => { throw new Error(text) })
+    }
+    return response.json()
+  })
+  .then(data => {
+    localStorage.setItem('studyvalyria_current_user', JSON.stringify(data))
+    closeLoginModal()
+    updateNavigationForLoggedInUser(data)
+    showSuccessMessage('Login successful!')
+    
+    // Redirect to appropriate dashboard using auth manager
+    setTimeout(() => {
+      if (window.authManager) {
+        authManager.redirectToDashboard()
+      } else {
+        // Fallback redirection if auth manager not available
+        const userType = data.UserType || data.userType
+        if (userType === 'student') {
+          window.location.href = '/Views/student-dashboard.html'
+        } else if (userType === 'educator') {
+          window.location.href = '/Views/educator-dashboard.html'
+        } else if (userType === 'admin') {
+          window.location.href = '/Views/admin-dashboard.html'
+        }
+      }
+    }, 1500)
+  })
+  .catch(error => {
+    showError('passwordError', error.message || 'Invalid email or password.')
+  })
+}
+
+// Validate login form
+function validateLoginForm(email, password) {
+  let isValid = true
+  
+  if (!email) {
+    showError('emailError', 'Email is required.')
+    isValid = false
+  } else if (!isValidEmail(email)) {
+    showError('emailError', 'Please enter a valid email address.')
+    isValid = false
+  }
+  
+  if (!password) {
+    showError('passwordError', 'Password is required.')
+    isValid = false
+  }
+  
+  return isValid
+}
+
+// Show error message
+function showError(elementId, message) {
+  document.getElementById(elementId).textContent = message
+}
+
+// Show success message
+function showSuccessMessage(message) {
+  // Create a temporary success message
+  const successDiv = document.createElement('div')
+  successDiv.textContent = message
+  successDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 10px 20px; border-radius: 5px; z-index: 1001;'
+  document.body.appendChild(successDiv)
+  
+  setTimeout(() => {
+    document.body.removeChild(successDiv)
+  }, 3000)
+}
+
+// Fill demo credentials
+function fillDemoCredentials(userType) {
+  const credentials = {
+    student: { email: 'student@demo.com', password: 'password123' },
+    educator: { email: 'educator@demo.com', password: 'password123' },
+    admin: { email: 'admin@demo.com', password: 'password123' }
+  }
+  
+  const cred = credentials[userType]
+  if (cred) {
+    document.getElementById('loginEmail').value = cred.email
+    document.getElementById('loginPassword').value = cred.password
+  }
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+  const modal = document.getElementById('loginModal')
+  if (event.target === modal) {
+    closeLoginModal()
+  }
+}
+
 // Export functions for use in other scripts
 window.StudyValyriaGuest = {
   searchCourses,
   filterCoursesByLevel,
   getCourseById,
   coursesData,
+  checkAuthenticationState,
+  handleSignOut,
+  openLoginModal,
+  closeLoginModal,
+  handleLogin,
+  fillDemoCredentials
 }
